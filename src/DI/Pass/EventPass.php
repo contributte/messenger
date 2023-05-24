@@ -29,11 +29,13 @@ class EventPass extends AbstractPass
 		if ($dispatcher !== null) {
 			// Reuse existing dispatcher
 			$builder->addDefinition($this->prefix('event.dispatcher'))
-				->setFactory($builder->getDefinitionByType(EventDispatcher::class));
+				->setFactory('@' . $dispatcher)
+				->setAutowired(false);
 		} else {
 			// Register default fallback dispatcher
 			$builder->addDefinition($this->prefix('event.dispatcher'))
-				->setFactory(EventDispatcher::class);
+				->setFactory(EventDispatcher::class)
+				->setAutowired(false);
 		}
 	}
 

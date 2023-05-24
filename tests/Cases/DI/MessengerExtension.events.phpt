@@ -1,0 +1,42 @@
+<?php declare(strict_types = 1);
+
+namespace Tests\Cases\DI;
+
+use Contributte\EventDispatcher\DI\EventDispatcherExtension;
+use Contributte\Tester\Toolkit;
+use Nette\DI\Compiler;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Tester\Assert;
+use Tests\Toolkit\Container;
+
+require_once __DIR__ . '/../../bootstrap.php';
+
+// Default event dispatcher
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->build();
+
+	Assert::count(1, $container->findByType(EventDispatcherInterface::class));
+	Assert::true($container->hasService('messenger.event.dispatcher'));
+});
+
+// Provided event dispatcher
+Toolkit::test(static function () {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(static function (Compiler $compiler): void {
+			$compiler->addExtension('events', new EventDispatcherExtension());
+		})
+		->build();
+
+	Assert::count(2, $container->findByType(EventDispatcherInterface::class));
+	Assert::true($container->hasService('messenger.event.dispatcher'));
+
+	Assert::false($container->isCreated('events.dispatcher'));
+	Assert::false($container->isCreated('messenger.event.dispatcher'));
+	Assert::type(EventDispatcher::class, $container->getByType(EventDispatcherInterface::class));
+	Assert::true($container->isCreated('events.dispatcher'));
+	Assert::false($container->isCreated('messenger.event.dispatcher'));
+});
