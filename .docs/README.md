@@ -145,8 +145,7 @@ services:
 
 ### Message
 
-All messages are just
-simple [POJO](https://stackoverflow.com/questions/41188002/what-does-the-term-plain-old-php-object-popo-exactly-mean.
+All messages are just simple [POJO](https://stackoverflow.com/questions/41188002/what-does-the-term-plain-old-php-object-popo-exactly-mean).
 
 ```php
 <?php declare(strict_types = 1);
@@ -168,8 +167,8 @@ final class SimpleMessage
 
 ### Handlers
 
-All handlers must be registered to your [DIC container](https://doc.nette.org/en/dependency-injection)
-via [Neon files](https://doc.nette.org/en/neon/format). All handlers must have `#[AsMessageHandler]` attribute.
+All handlers must be registered to your [DIC container](https://doc.nette.org/en/dependency-injection) via [Neon files](https://doc.nette.org/en/neon/format). All handlers must
+have [`#[AsMessageHandler]`](https://github.com/symfony/messenger/blob/6e749550d539f787023878fad675b744411db003/Attribute/AsMessageHandler.php) attribute.
 
 ```neon
 services:
@@ -182,7 +181,6 @@ services:
 namespace App\Domain;
 
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use Tests\Mocks\Message\SimpleMessage;
 
 #[AsMessageHandler]
 final class SimpleMessageHandler
@@ -200,16 +198,18 @@ final class SimpleMessageHandler
 
 Handling errors in async environments is little bit tricky. You need to setup logger to display errors in CLI environments.
 
-
-
 ## Integrations
 
 ### Doctrine
 
-Take advantage of enpowering this package with 2 extra packages:
+Take advantage of enpowering this package with 6 extra packages:
 
 - `doctrine/dbal` via [nettrine/dbal](https://github.com/contributte/doctrine-dbal)
 - `doctrine/orm` via [nettrine/orm](https://github.com/contributte/doctrine-orm)
+- `doctrine/annotations` via [nettrine/orm](https://github.com/contributte/doctrine-annotations)
+- `doctrine/cache` via [nettrine/orm](https://github.com/contributte/doctrine-cache)
+- `doctrine/migrations` via [nettrine/orm](https://github.com/contributte/doctrine-migrations)
+- `doctrine/fixtures` via [nettrine/orm](https://github.com/contributte/doctrine-fixtures)
 
 ```sh
 composer require nettrine/annotations nettrine/cache nettrine/migrations nettrine/fixtures nettrine/dbal nettrine/orm
@@ -240,16 +240,18 @@ extensions:
 ## Limitations
 
 **Roadmap**
+
 - No PCNTL listeners registered.
 - No retry_strategy overrides (max_retries, delay, multiply, max_delay).
 - No failing queue settings.
 - No fallbackBus in RoutableMessageBus.
-- No proper console commands.
+- No failing console commands.
+- No debug console commands.
 
 **No ETA**
+
 - MessageHandler can handle only 1 message.
 - MessageHandler can have only `__invoke` method.
-
 
 ## Examples
 
