@@ -22,7 +22,10 @@ Toolkit::test(function (): void {
 				messenger:
 					bus:
 						messageBus:
+							middlewares: []
 						commandBus:
+							allowNoHandlers: true
+							allowNoSenders: false
 						eventBus:
 			NEON
 			));
@@ -30,6 +33,7 @@ Toolkit::test(function (): void {
 		->build();
 
 	Assert::count(3, $container->findByType(MessageBus::class));
+	Assert::count(3 * 3, $container->findByType(MiddlewareInterface::class));
 });
 
 // Buses with middlewares
@@ -42,14 +46,18 @@ Toolkit::test(function (): void {
 					bus:
 						messageBus:
 							middlewares:
-								- Tests\Mocks\Middleware\SimpleMiddleware
+								dummy1: Tests\Mocks\Middleware\SimpleMiddleware
+								dummy2: @middleware
+
+				services:
+					middleware: Tests\Mocks\Middleware\SimpleMiddleware
 			NEON
 			));
 		})
 		->build();
 
 	Assert::count(1, $container->findByType(MessageBus::class));
-	Assert::count(4, $container->findByType(MiddlewareInterface::class));
+	Assert::count(6, $container->findByType(MiddlewareInterface::class));
 });
 
 // Bus container

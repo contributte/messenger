@@ -237,10 +237,33 @@ final class MessengerTest extends TestCase
 		Assert::count(1, $envelops2);
 
 		Assert::equal([
-			['message' => 'Sending message {class} with {alias} sender using {sender}'],
-			['message' => 'Received message {class}'],
-			['message' => 'Rejected message {class} will be sent to the failure transport {transport}.'],
-			['message' => 'Worker stopped due to maximum count of {count} messages processed'],
+			[
+				'level' => 'info',
+				'message' => 'Sending message {class} with {alias} sender using {sender}',
+				'context' => [
+					'class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage',
+					'alias' => 'transport1',
+					'sender' => 'Symfony\Component\Messenger\Transport\InMemoryTransport',
+				],
+			],
+			[
+				'level' => 'info',
+				'message' => 'Received message {class}',
+				'context' => ['class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage'],
+			],
+			[
+				'level' => 'info',
+				'message' => 'Rejected message {class} will be sent to the failure transport {transport}.',
+				'context' => [
+					'class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage',
+					'transport' => 'Symfony\Component\Messenger\Transport\InMemoryTransport',
+				],
+			],
+			[
+				'level' => 'info',
+				'message' => 'Worker stopped due to maximum count of {count} messages processed',
+				'context' => ['count' => 1],
+			],
 		], $logger->obtain());
 	}
 

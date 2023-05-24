@@ -1,0 +1,47 @@
+input:
+    config:
+        extensions:
+            messenger: Contributte\Messenger\DI\MessengerExtension()
+
+        messenger:
+            transport:
+                sync:
+                    dsn: sync://
+
+            routing:
+                Tests\Mocks\Message\SameMessage: [sync]
+
+        services:
+            - Tests\Mocks\Handler\SameHandler1
+            - Tests\Mocks\Handler\SameHandler2
+
+    dispatch:
+        bus: messageBus
+        message: Tests\Mocks\Message\SameMessage("foobar")
+
+output:
+    logger:
+        - level: info
+          message: 'Sending message {class} with {alias} sender using {sender}'
+          context:
+            class: Tests\Mocks\Message\SameMessage
+            alias: sync
+            sender: 'Symfony\Component\Messenger\Transport\Sync\SyncTransport'
+
+        - level: info
+          message: 'Received message {class}'
+          context:
+            class: Tests\Mocks\Message\SameMessage
+
+        - level: info
+          message: 'Message {class} handled by {handler}'
+          context:
+            class: Tests\Mocks\Message\SameMessage
+            handler: 'Tests\Mocks\Handler\SameHandler1::__invoke'
+
+        - level: info
+          message: 'Message {class} handled by {handler}'
+          context:
+            class: Tests\Mocks\Message\SameMessage
+            handler: 'Tests\Mocks\Handler\SameHandler2::__invoke'
+

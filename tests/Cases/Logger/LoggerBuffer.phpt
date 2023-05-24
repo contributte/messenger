@@ -13,10 +13,15 @@ Toolkit::test(function (): void {
 	$logger->log('error', 'test');
 
 	Assert::count(1, $logger->obtain());
-	Assert::equal([['message' => 'test']], $logger->obtain());
+	Assert::equal([
+		['level' => 'error', 'message' => 'test', 'context' => []],
+	], $logger->obtain());
 
 	$logger->log('error', 'test2');
 
 	Assert::count(2, $logger->obtain());
-	Assert::equal([['message' => 'test'], ['message' => 'test2']], $logger->obtain());
+	Assert::equal([
+		['level' => 'error', 'message' => 'test', 'context' => []],
+		['level' => 'error', 'message' => 'test2', 'context' => []],
+	], $logger->obtain());
 });

@@ -74,10 +74,10 @@ messenger:
             dsn: "sync://"
 
     routing:
-        App\Domain\LogText: [sync]
+        App\Domain\SimpleMessage: [sync]
 
 services:
-    - App\Domain\LogTextHandler
+    - App\Domain\SimpleMessageHandler
 ```
 
 Full configuration example:
@@ -172,7 +172,7 @@ via [Neon files](https://doc.nette.org/en/neon/format). All handlers must have `
 
 ```neon
 services:
-    - App\Domain\SimpleHandler
+    - App\Domain\SimpleMessageHandler
 ```
 
 ```php
@@ -184,7 +184,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Tests\Mocks\Message\SimpleMessage;
 
 #[AsMessageHandler]
-final class SimpleHandler
+final class SimpleMessageHandler
 {
 
   public function __invoke(SimpleMessage $message): void

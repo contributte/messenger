@@ -5,13 +5,15 @@ namespace Tests\Cases\DI;
 use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
-use Nette\DI\InvalidConfigurationException;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransport;
 use Symfony\Component\Messenger\Exception\InvalidArgumentException;
+use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Transport\InMemoryTransport;
 use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
+use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
+use Symfony\Component\Messenger\Transport\TransportInterface;
 use Tester\Assert;
 use Tests\Toolkit\Container;
 use Tests\Toolkit\Helpers;
@@ -24,7 +26,10 @@ Toolkit::test(function (): void {
 		->withDefaults()
 		->build();
 
+	Assert::count(1, $container->findByType(SerializerInterface::class));
+	Assert::count(3, $container->findByType(MiddlewareInterface::class));
 	Assert::count(5, $container->findByType(TransportFactoryInterface::class));
+	Assert::count(0, $container->findByType(TransportInterface::class));
 });
 
 // Count transport factories
@@ -43,8 +48,28 @@ Toolkit::test(function (): void {
 	Assert::count(5, $container->findByType(TransportFactoryInterface::class));
 });
 
+// Override transport factories
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					transportFactory:
+						redis1: Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransportFactory
+						redis2: @redis
+				services:
+					redis: Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransportFactory
+			NEON
+			));
+		})
+		->build();
+
+	Assert::count(8, $container->findByType(TransportFactoryInterface::class));
+});
+
 // Create transport from factory
-Toolkit::test(static function() {
+Toolkit::test(static function () {
 	$container = Container::of()
 		->withDefaults()
 		->withCompiler(static function (Compiler $compiler): void {
@@ -76,8 +101,29 @@ Toolkit::test(static function() {
 	Assert::type(SyncTransport::class, $container->getService('messenger.transport.sync1'));
 
 	Assert::exception(
-		static fn() => $container->getByType(TransportFactoryInterface::class)->createTransport('fake://', [], new PhpSerializer()),
+		static fn () => $container->getByType(TransportFactoryInterface::class)->createTransport('fake://', [], new PhpSerializer()),
 		InvalidArgumentException::class,
 		'No transport supports the given Messenger DSN "fake://"..'
 	);
+});
+
+// Failed transports
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					transport:
+						memory1:
+							dsn: in-memory://
+							failureTransport: memory2
+						memory2:
+							dsn: in-memory://
+			NEON
+			));
+		})
+		->build();
+
+	Assert::count(1, $container->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG));
 });
