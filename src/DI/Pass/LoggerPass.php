@@ -3,6 +3,7 @@
 namespace Contributte\Messenger\DI\Pass;
 
 use Contributte\Messenger\Logger\MessengerLogger;
+use Nette\DI\Definitions\ServiceDefinition;
 use Nette\DI\Definitions\Statement;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -18,7 +19,11 @@ class LoggerPass extends AbstractPass
 	 */
 	public function loadPassConfiguration(): void
 	{
-		// Nothing to register
+		$builder = $this->getContainerBuilder();
+
+		$builder->addDefinition($this->prefix('logger.logger'))
+			->setFactory(MessengerLogger::class)
+			->setAutowired(false);
 	}
 
 	/**
@@ -65,9 +70,9 @@ class LoggerPass extends AbstractPass
 				->setAutowired(false);
 		}
 
-		$builder->addDefinition($this->prefix('logger.logger'))
-			->setFactory(MessengerLogger::class, [$httpLogger, $consoleLogger])
-			->setAutowired(false);
+		/** @var ServiceDefinition $loggerDef */
+		$loggerDef = $builder->getDefinition($this->prefix('logger.logger'));
+		$loggerDef->setArguments([$httpLogger, $consoleLogger]);
 	}
 
 }
