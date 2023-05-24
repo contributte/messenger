@@ -18,7 +18,7 @@ class BufferLogger extends AbstractLogger
 	 */
 	public function log(mixed $level, $message, array $context = []): void
 	{
-		$this->logs[] = ['message' => $message];
+		$this->logs[] = ['level' => $level, 'message' => $message, 'context' => $context];
 	}
 
 	/**
