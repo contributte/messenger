@@ -38,7 +38,7 @@ class LoggerPass extends AbstractPass
 				->setAutowired(false);
 		} elseif ($logger !== null) {
 			$httpLogger = $builder->addDefinition($this->prefix('logger.httpLogger'))
-				->setFactory($builder->getDefinition($logger))
+				->setFactory('@' . $logger)
 				->setAutowired(false);
 		} else {
 			$httpLogger = $builder->addDefinition($this->prefix('logger.httpLogger'))
@@ -53,7 +53,7 @@ class LoggerPass extends AbstractPass
 				->setAutowired(false);
 		} elseif ($logger !== null) {
 			$consoleLogger = $builder->addDefinition($this->prefix('logger.consoleLogger'))
-				->setFactory($builder->getDefinition($logger))
+				->setFactory('@' . $logger)
 				->setAutowired(false);
 		} else {
 			$consoleLogger = $builder->addDefinition($this->prefix('logger.consoleLogger'))
@@ -66,7 +66,8 @@ class LoggerPass extends AbstractPass
 		}
 
 		$builder->addDefinition($this->prefix('logger.logger'))
-			->setFactory(MessengerLogger::class, [$httpLogger, $consoleLogger]);
+			->setFactory(MessengerLogger::class, [$httpLogger, $consoleLogger])
+			->setAutowired(false);
 	}
 
 }
