@@ -14,10 +14,10 @@ class TransportFactoryPass extends AbstractPass
 {
 
 	public const DEFAULT_TRANSPORT_FACTORY = [
-		'amqp' => AmqpTransportFactory::class,
-		'inMemory' => InMemoryTransportFactory::class,
-		'redis' => RedisTransportFactory::class,
 		'sync' => SyncTransportFactory::class,
+		'inMemory' => InMemoryTransportFactory::class,
+		'amqp' => AmqpTransportFactory::class,
+		'redis' => RedisTransportFactory::class,
 	];
 
 	/**

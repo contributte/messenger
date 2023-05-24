@@ -114,6 +114,7 @@ messenger:
         # redis: Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransportFactory
         # sync: Symfony\Component\Messenger\Transport\Sync\SyncTransportFactorya
         # amqp: Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpTransportFactory
+        # doctrine: Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory
         # inMemory: Symfony\Component\Messenger\Transport\InMemoryTransportFactory
         # inMemory: @customMemoryTransportFactory
 
