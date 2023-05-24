@@ -1,0 +1,18 @@
+version: 1
+
+input:
+	config:
+		extensions:
+			messenger: Contributte\Messenger\DI\MessengerExtension()
+
+		messenger:
+			bus:
+				messageBus:
+					allowNoHandlers: true
+					allowNoSenders: false
+
+output:
+	services:
+		counting:
+			- { Symfony\Component\Messenger\MessageBus: { count: 1 }}
+			- { Symfony\Component\Messenger\Middleware\MiddlewareInterface: { count: 3 }}

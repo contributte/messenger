@@ -1,0 +1,28 @@
+version: 1
+
+input:
+	config:
+		extensions:
+			messenger: Contributte\Messenger\DI\MessengerExtension()
+
+		messenger:
+			transport:
+				memory:
+					dsn: in-memory://
+
+			routing:
+				Tests\Mocks\Scenario\ScenarioMessage: [memory]
+
+		services:
+			- Tests\Mocks\Scenario\ScenarioHandler
+
+output:
+	services:
+		existence:
+		- { Contributte\Messenger\Bus\BusRegistry: { exists: true }}
+		- { Tests\Mocks\Scenario\ScenarioHandler: { exists: true }}
+		counting:
+		- { Symfony\Component\Messenger\Transport\Serialization\SerializerInterface: { count: 1 }}
+		- { Symfony\Component\Messenger\Middleware\MiddlewareInterface: { count: 3 }}
+		- { Symfony\Component\Messenger\Transport\TransportFactoryInterface: { count: 5 }}
+		- { Symfony\Component\Messenger\Transport\TransportInterface: { count: 1 }}

@@ -1,0 +1,15 @@
+version: 1
+
+input:
+	config:
+		extensions:
+			messenger: Contributte\Messenger\DI\MessengerExtension()
+
+		messenger:
+			routing:
+				Tests\Mocks\Scenario\ScenarioMessage: [test]
+
+output:
+	exception:
+		type: Contributte\Messenger\Exception\LogicalException
+		message: 'Invalid transport "test" defined for "Tests\Mocks\Scenario\ScenarioMessage". Available transports "".'

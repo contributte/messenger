@@ -1,0 +1,15 @@
+version: 1
+
+input:
+	config:
+		extensions:
+			messenger: Contributte\Messenger\DI\MessengerExtension()
+
+		messenger:
+			transportFactory:
+				redis: Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransportFactory
+
+output:
+	services:
+		counting:
+			- { Symfony\Component\Messenger\Transport\TransportFactoryInterface: { count: 5 }}

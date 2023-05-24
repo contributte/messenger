@@ -1,0 +1,19 @@
+version: 1
+
+input:
+	config:
+		extensions:
+			messenger: Contributte\Messenger\DI\MessengerExtension()
+
+		messenger:
+			transport:
+				memory1:
+					dsn: in-memory://
+					options:
+						serialize: false
+					serializer: Symfony\Component\Messenger\Transport\Serialization\PhpSerializer
+
+output:
+	services:
+		counting:
+			- { Symfony\Component\Messenger\Transport\TransportInterface: { count: 1 }}
