@@ -28,7 +28,7 @@
         "symfony/messenger": "^6.2.8",
         "symfony/event-dispatcher": "^6.2.8",
         "symfony/console": "^6.2.10",
-        "symfony/var-dumper": "^6.2.10"
+        "symfony/var-dumper": "^6.0.19 || ^6.2.10"
     },
     "require-dev": {
         "psr/container": "^2.0.2",
