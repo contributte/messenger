@@ -59,7 +59,8 @@ class BusPass extends AbstractPass
 
 			$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.handleMiddleware', $name)))
 				->setFactory(HandleMessageMiddleware::class, [$this->prefix(sprintf('@bus.%s.locator', $name)), $busConfig->allowNoHandlers])
-				->setAutowired(false);
+				->setAutowired(false)
+				->addSetup('setLogger', [$this->prefix('@logger.logger')]);
 
 			$builder->addDefinition($this->prefix(sprintf('bus.%s.bus', $name)))
 				->setFactory($busConfig->class ?? SymfonyMessageBus::class, [$middlewares])
