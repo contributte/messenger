@@ -4,6 +4,7 @@ namespace Tests\Toolkit;
 
 use Nette\DI\Config\Adapters\NeonAdapter;
 use Nette\Neon\Neon;
+use Nette\Utils\FileSystem;
 
 final class Helpers
 {
@@ -21,7 +22,7 @@ final class Helpers
 	 */
 	public static function neonFile(string $file): array
 	{
-		return (new NeonAdapter())->process((array) Neon::decodeFile($file));
+		return (new NeonAdapter())->process((array) Neon::decode(FileSystem::read($file)));
 	}
 
 }

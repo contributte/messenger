@@ -31,14 +31,16 @@ class ConsolePass extends AbstractPass
 				$this->prefix('@logger.logger'),
 			]);
 
-		$builder->addDefinition($this->extension->prefix('console.statsCommand'))
-			->setFactory(StatsCommand::class, [$this->prefix('@transport.container'), []]); // @TODO transportNames
-
 		$builder->addDefinition($this->extension->prefix('console.debugCommand'))
 			->setFactory(DebugCommand::class, [[]]); // @TODO mapping
 
 		$builder->addDefinition($this->extension->prefix('console.setupTransportsCommand'))
 			->setFactory(SetupTransportsCommand::class, [$this->prefix('@transport.container'), []]); // @TODO transportNames
+
+		if (class_exists(StatsCommand::class)) {
+			$builder->addDefinition($this->extension->prefix('console.statsCommand'))
+				->setFactory(StatsCommand::class, [$this->prefix('@transport.container'), []]); // @TODO transportNames
+		}
 
 		if (PHP_VERSION === 'fake') { // @TODO failing queues
 			$builder->addDefinition($this->extension->prefix('console.failedMessageRemoveCommand'))
