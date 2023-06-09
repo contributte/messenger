@@ -8,7 +8,7 @@ use Nette\DI\Compiler;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransport;
 use Symfony\Component\Messenger\Exception\InvalidArgumentException;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
-use Symfony\Component\Messenger\Transport\InMemoryTransport;
+use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
@@ -103,7 +103,7 @@ Toolkit::test(static function () {
 	Assert::exception(
 		static fn () => $container->getByType(TransportFactoryInterface::class)->createTransport('fake://', [], new PhpSerializer()),
 		InvalidArgumentException::class,
-		'No transport supports the given Messenger DSN "fake://"..'
+		'No transport supports the given Messenger DSN.'
 	);
 });
 

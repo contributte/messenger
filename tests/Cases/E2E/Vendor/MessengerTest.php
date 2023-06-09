@@ -16,7 +16,7 @@ use Symfony\Component\Messenger\Middleware\FailedMessageProcessingMiddleware;
 use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 use Symfony\Component\Messenger\Middleware\SendMessageMiddleware;
 use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
-use Symfony\Component\Messenger\Transport\InMemoryTransportFactory;
+use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransportFactory;
 use Symfony\Component\Messenger\Transport\Sender\SendersLocator;
 use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
 use Symfony\Component\Messenger\Worker;
@@ -243,7 +243,7 @@ final class MessengerTest extends TestCase
 				'context' => [
 					'class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage',
 					'alias' => 'transport1',
-					'sender' => 'Symfony\Component\Messenger\Transport\InMemoryTransport',
+					'sender' => 'Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport',
 				],
 			],
 			[
@@ -256,7 +256,7 @@ final class MessengerTest extends TestCase
 				'message' => 'Rejected message {class} will be sent to the failure transport {transport}.',
 				'context' => [
 					'class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage',
-					'transport' => 'Symfony\Component\Messenger\Transport\InMemoryTransport',
+					'transport' => 'Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport',
 				],
 			],
 			[
