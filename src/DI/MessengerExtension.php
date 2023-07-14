@@ -97,7 +97,7 @@ class MessengerExtension extends CompilerExtension
 			),
 			'transport' => Expect::arrayOf(
 				Expect::structure([
-					'dsn' => Expect::string()->required(),
+					'dsn' => Expect::string()->required()->dynamic(),
 					'options' => Expect::array(),
 					'serializer' => $expectService,
 					'failureTransport' => Expect::string(),
