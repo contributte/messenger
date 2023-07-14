@@ -127,3 +127,22 @@ Toolkit::test(function (): void {
 
 	Assert::count(1, $container->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG));
 });
+
+// Dynamic parameters
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withDynamicParameters(['sync_dsn' => 'sync://'])
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					transport:
+						sync:
+							dsn: %sync_dsn%
+			NEON
+			));
+		})
+		->build();
+
+	Assert::type(SyncTransport::class, $container->getByName('messenger.transport.sync'));
+});
