@@ -19,6 +19,7 @@ use Nette\PhpGenerator\ClassType;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
 use Nette\Utils\ArrayHash;
+use PhpOffice\PhpSpreadsheet\Calculation\MathTrig\Exp;
 use stdClass;
 
 /**
@@ -32,6 +33,7 @@ class MessengerExtension extends CompilerExtension
 	public const FAILURE_TRANSPORT_TAG = 'contributte.messenger.failure_transport';
 	public const BUS_TAG = 'contributte.messenger.bus';
 	public const HANDLER_TAG = 'contributte.messenger.handler';
+	public const RETRY_STRATEGY_TAG = 'contributte.messenger.retry_strategy';
 
 	/** @var AbstractPass[] */
 	protected array $passes = [];
@@ -101,6 +103,22 @@ class MessengerExtension extends CompilerExtension
 					'options' => Expect::array(),
 					'serializer' => $expectService,
 					'failureTransport' => Expect::string(),
+                    'retryStrategy' => Expect::anyOf(
+						null,
+						Expect::structure([
+							'maxRetries' => Expect::int(),
+							'delay' => Expect::int(),
+							'multiplier' => Expect::anyOf(Expect::int(), Expect::float())->castTo('float'),
+							'maxDelay' => Expect::int(),
+							'service' => $expectService->nullable(),
+						]),
+					)->default(ArrayHash::from([
+						'maxRetries' => 3,
+						'delay' => 1000,
+						'multiplier' => 1,
+						'maxDelay' => 0,
+						'service' => null,
+					])),
 				]),
 				Expect::string()->required()
 			),
