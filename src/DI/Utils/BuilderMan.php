@@ -4,7 +4,9 @@ namespace Contributte\Messenger\DI\Utils;
 
 use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Messenger\DI\Pass\AbstractPass;
+use Contributte\Messenger\Exception\LogicalException;
 use Nette\DI\Definitions\Definition;
+use Symfony\Component\Messenger\Transport\TransportInterface;
 
 final class BuilderMan
 {
@@ -43,6 +45,35 @@ final class BuilderMan
 	public function getTransports(): array
 	{
 		return $this->getServiceNames(MessengerExtension::TRANSPORT_TAG);
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function getFailureTransports(): array
+	{
+		$builder = $this->pass->getContainerBuilder();
+		$definitions = $builder->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG);
+		$transports = $this->getTransports();
+
+		$transportsMapping = [];
+		foreach ($definitions as $serviceName => $tagValue) {
+			$definition = $builder->getDefinition($serviceName);
+			$transport = $definition->getTag(MessengerExtension::TRANSPORT_TAG);
+			$failureTransport = $definition->getTag(MessengerExtension::FAILURE_TRANSPORT_TAG);
+
+			if (!is_string($transport) || !is_string($failureTransport)) {
+				continue;
+			}
+
+			if (!isset($transports[$failureTransport])) {
+				throw new LogicalException(sprintf('Invalid failure transport "%s" defined for "%s" transport. Available transports "%s".', $failureTransport, $transport, implode(', ', array_keys($transports))));
+			}
+
+			$transportsMapping[$transport] = $transports[$failureTransport];
+		}
+
+		return $transportsMapping;
 	}
 
 	/**

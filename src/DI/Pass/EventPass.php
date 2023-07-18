@@ -3,6 +3,7 @@
 namespace Contributte\Messenger\DI\Pass;
 
 use Contributte\Messenger\Container\NetteContainer;
+use Contributte\Messenger\DI\Utils\BuilderMan;
 use Nette\DI\Definitions\ServiceDefinition;
 use Nette\DI\Definitions\Statement;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -15,6 +16,9 @@ use Symfony\Component\Messenger\EventListener\StopWorkerOnSigtermSignalListener;
 
 class EventPass extends AbstractPass
 {
+	/**
+	 * Register services
+	 */
 	public function loadPassConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
@@ -45,15 +49,25 @@ class EventPass extends AbstractPass
 
 		/** @var ServiceDefinition $failureTransportContainerDef */
 		$failureTransportContainerDef = $builder->getDefinition($this->prefix('failure_transport.container'));
-		$failureTransportContainerDef->setArgument(0, []); // TODO
+		$failureTransportContainerDef->setArgument(0, BuilderMan::of($this)->getFailureTransports());
 
 		/** @var ServiceDefinition $retryStrategyContainerDef */
 		$retryStrategyContainerDef = $builder->getDefinition($this->prefix('retry_strategy.container'));
-		$retryStrategyContainerDef->setArgument(0, []); // TODO
+		$retryStrategyContainerDef->setArgument(0,
+			// TODO to be dynamic
+			[
+				'test' => ''
+			],
+		);
 
 		/** @var ServiceDefinition $sendersContainerDef */
 		$sendersContainerDef = $builder->getDefinition($this->prefix('sender.container'));
-		$sendersContainerDef->setArgument(0, []); // TODO
+		$sendersContainerDef->setArgument(0,
+			// TODO to be dynamic
+			[
+				'test' => ''
+			],
+		);
 
 		$dispatcherServiceName = $builder->getByType(EventDispatcherInterface::class);
 
@@ -85,14 +99,16 @@ class EventPass extends AbstractPass
 	{
 		$subscribers = [
 			new Statement(DispatchPcntlSignalListener::class),
+			/*
 			new Statement(
 				SendFailedMessageForRetryListener::class,
 				[
 					$this->prefix('@sender.container'),
-					$this->prefix('@failure_transport.container'),
+					$this->prefix('@retry_strategy.container'),
 					$this->prefix('@logger.logger'),
 				]
 			),
+			*/
 			new Statement(
 				SendFailedMessageToFailureTransportListener::class,
 				[
