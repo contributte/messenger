@@ -106,4 +106,24 @@ final class BuilderMan
 		return $definitions;
 	}
 
+    /**
+     * @return array<string, string>
+     */
+    public function getRetryStrategies(): array
+    {
+        $builder = $this->pass->getContainerBuilder();
+		$definitions = $this->getServiceDefinitions(MessengerExtension::TRANSPORT_TAG);
+
+		$strategies = [];
+		foreach ($definitions as $transport) {
+			$transportName = $transport->getTag(MessengerExtension::TRANSPORT_TAG);
+			$retryService = $transport->getTag(MessengerExtension::RETRY_STRATEGY_TAG);
+
+			if ($retryService !== null) {
+				$strategies[$transportName] = $retryService;
+			}
+		}
+
+		return $strategies;
+    }
 }

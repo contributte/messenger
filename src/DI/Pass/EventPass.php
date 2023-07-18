@@ -33,11 +33,6 @@ class EventPass extends AbstractPass
 		$builder->addDefinition($this->prefix('retry_strategy.container'))
 			->setFactory(NetteContainer::class)
 			->setAutowired(false);
-
-		// Register container for retry strategies
-		$builder->addDefinition($this->prefix('sender.container'))
-			->setFactory(NetteContainer::class)
-			->setAutowired(false);
 	}
 
 	/**
@@ -53,21 +48,7 @@ class EventPass extends AbstractPass
 
 		/** @var ServiceDefinition $retryStrategyContainerDef */
 		$retryStrategyContainerDef = $builder->getDefinition($this->prefix('retry_strategy.container'));
-		$retryStrategyContainerDef->setArgument(0,
-			// TODO to be dynamic
-			[
-				'test' => ''
-			],
-		);
-
-		/** @var ServiceDefinition $sendersContainerDef */
-		$sendersContainerDef = $builder->getDefinition($this->prefix('sender.container'));
-		$sendersContainerDef->setArgument(0,
-			// TODO to be dynamic
-			[
-				'test' => ''
-			],
-		);
+		$retryStrategyContainerDef->setArgument(0, BuilderMan::of($this)->getRetryStrategies());
 
 		$dispatcherServiceName = $builder->getByType(EventDispatcherInterface::class);
 
@@ -99,16 +80,14 @@ class EventPass extends AbstractPass
 	{
 		$subscribers = [
 			new Statement(DispatchPcntlSignalListener::class),
-			/*
 			new Statement(
 				SendFailedMessageForRetryListener::class,
 				[
-					$this->prefix('@sender.container'),
+                    $this->prefix('@transport.container'),
 					$this->prefix('@retry_strategy.container'),
 					$this->prefix('@logger.logger'),
 				]
 			),
-			*/
 			new Statement(
 				SendFailedMessageToFailureTransportListener::class,
 				[
@@ -122,7 +101,7 @@ class EventPass extends AbstractPass
 		if (class_exists(StopWorkerOnSignalsListener::class)) {
 			$subscribers[] = new Statement(StopWorkerOnSignalsListener::class);
 		} else {
-			$subscribers[] = new Statement(StopWorkerOnSigtermSignalListener::class);
+			$subscribers[] = new Statement(StopWorkerOnSigtermSignalListener::class); // @phpstan-ignore-line
 		}
 
 		return $subscribers;
