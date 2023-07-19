@@ -98,11 +98,17 @@ class EventPass extends AbstractPass
 		];
 
 		// Backward compatibility
-		$subscribers[] = new Statement(
-			class_exists(StopWorkerOnSignalsListener::class)
-				? StopWorkerOnSignalsListener::class
-				: StopWorkerOnSigtermSignalListener::class // @phpstan-ignore-line
-			);
+		if (class_exists(StopWorkerOnSignalsListener::class)) {
+			$subscribers[] = new Statement(StopWorkerOnSignalsListener::class, [
+				null,
+				$this->prefix('@logger.logger'),
+			]);
+		} else {
+			// @phpstan-ignore-next-line
+			$subscribers[] = new Statement(StopWorkerOnSigtermSignalListener::class, [
+				$this->prefix('@logger.logger'),
+			]);
+		}
 
 		return $subscribers;
 	}
