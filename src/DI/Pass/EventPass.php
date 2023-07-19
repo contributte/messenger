@@ -44,7 +44,7 @@ class EventPass extends AbstractPass
 
 		/** @var ServiceDefinition $failureTransportContainerDef */
 		$failureTransportContainerDef = $builder->getDefinition($this->prefix('failure_transport.container'));
-		$failureTransportContainerDef->setArgument(0, BuilderMan::of($this)->getFailureTransports());
+		$failureTransportContainerDef->setArgument(0, BuilderMan::of($this)->getTransportToFailureTransportsServiceMapping());
 
 		/** @var ServiceDefinition $retryStrategyContainerDef */
 		$retryStrategyContainerDef = $builder->getDefinition($this->prefix('retry_strategy.container'));
@@ -97,18 +97,9 @@ class EventPass extends AbstractPass
 			),
 		];
 
-		// Backward compatibility
-		if (class_exists(StopWorkerOnSignalsListener::class)) {
-			$subscribers[] = new Statement(StopWorkerOnSignalsListener::class, [
-				null,
-				$this->prefix('@logger.logger'),
-			]);
-		} else {
-			// @phpstan-ignore-next-line
-			$subscribers[] = new Statement(StopWorkerOnSigtermSignalListener::class, [
-				$this->prefix('@logger.logger'),
-			]);
-		}
+		$subscribers[] = class_exists(StopWorkerOnSignalsListener::class)
+			? new Statement(StopWorkerOnSignalsListener::class, [null, $this->prefix('@logger.logger')])
+			: new Statement(StopWorkerOnSigtermSignalListener::class, [$this->prefix('@logger.logger')]); // @phpstan-ignore-line
 
 		return $subscribers;
 	}

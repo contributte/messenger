@@ -131,7 +131,7 @@ final class MessengerTest extends TestCase
 		]);
 
 		$retryLocator = new ServicesContainer([
-			'transport1' => new MultiplierRetryStrategy(3, 1000, 1, 0),
+			'transport1' => new MultiplierRetryStrategy(3, 1, 1, 0),
 		]);
 
 		$retryListener = new SendFailedMessageForRetryListener(
