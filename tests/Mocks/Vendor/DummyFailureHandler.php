@@ -7,9 +7,9 @@ use RuntimeException;
 final class DummyFailureHandler
 {
 
-	public function __invoke(DummyRetryFailureMessage $message): void
+	public function __invoke(DummyFailureMessage $message): void
 	{
-		throw new RuntimeException();
+		throw new RuntimeException('Foo');
 	}
 
 }
