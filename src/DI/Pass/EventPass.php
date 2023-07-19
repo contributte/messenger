@@ -16,13 +16,13 @@ use Symfony\Component\Messenger\EventListener\StopWorkerOnSigtermSignalListener;
 
 class EventPass extends AbstractPass
 {
+
 	/**
 	 * Register services
 	 */
 	public function loadPassConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
-		$config = $this->getConfig();
 
 		// Register container for failure transports
 		$builder->addDefinition($this->prefix('failure_transport.container'))
@@ -83,7 +83,7 @@ class EventPass extends AbstractPass
 			new Statement(
 				SendFailedMessageForRetryListener::class,
 				[
-                    $this->prefix('@transport.container'),
+					$this->prefix('@transport.container'),
 					$this->prefix('@retry_strategy.container'),
 					$this->prefix('@logger.logger'),
 				]
@@ -97,13 +97,14 @@ class EventPass extends AbstractPass
 			),
 		];
 
-		// For symfony/messenger >= 6.3
-		if (class_exists(StopWorkerOnSignalsListener::class)) {
-			$subscribers[] = new Statement(StopWorkerOnSignalsListener::class);
-		} else {
-			$subscribers[] = new Statement(StopWorkerOnSigtermSignalListener::class); // @phpstan-ignore-line
-		}
+		// Backward compatibility
+		$subscribers[] = new Statement(
+			class_exists(StopWorkerOnSignalsListener::class)
+				? StopWorkerOnSignalsListener::class
+				: StopWorkerOnSigtermSignalListener::class // @phpstan-ignore-line
+			);
 
 		return $subscribers;
 	}
+
 }
