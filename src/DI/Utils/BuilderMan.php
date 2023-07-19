@@ -6,7 +6,6 @@ use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Messenger\DI\Pass\AbstractPass;
 use Contributte\Messenger\Exception\LogicalException;
 use Nette\DI\Definitions\Definition;
-use Symfony\Component\Messenger\Transport\TransportInterface;
 
 final class BuilderMan
 {
@@ -106,12 +105,11 @@ final class BuilderMan
 		return $definitions;
 	}
 
-    /**
-     * @return array<string, string>
-     */
-    public function getRetryStrategies(): array
-    {
-        $builder = $this->pass->getContainerBuilder();
+	/**
+	 * @return array<string, string>
+	 */
+	public function getRetryStrategies(): array
+	{
 		$definitions = $this->getServiceDefinitions(MessengerExtension::TRANSPORT_TAG);
 
 		$strategies = [];
@@ -119,11 +117,12 @@ final class BuilderMan
 			$transportName = $transport->getTag(MessengerExtension::TRANSPORT_TAG);
 			$retryService = $transport->getTag(MessengerExtension::RETRY_STRATEGY_TAG);
 
-			if ($retryService !== null) {
+			if (is_string($transportName) && is_string($retryService)) {
 				$strategies[$transportName] = $retryService;
 			}
 		}
 
 		return $strategies;
-    }
+	}
+
 }
