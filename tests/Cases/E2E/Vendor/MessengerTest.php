@@ -267,6 +267,128 @@ final class MessengerTest extends TestCase
 		], $logger->obtain());
 	}
 
+	public function testRealRetryListener(): void
+	{
+		$handler = DummyRetryFailureHandler::create(10);
+		$logger = new BufferLogger();
+
+		$inMemoryTransport1 = (new InMemoryTransportFactory())->createTransport('in-memory://', [], new PhpSerializer());
+		$inMemoryTransport2 = (new InMemoryTransportFactory())->createTransport('in-memory://', [], new PhpSerializer());
+
+		$senderLocator = new ServicesContainer([
+			'transport1' => $inMemoryTransport1,
+		]);
+
+		$retryLocator = new ServicesContainer([
+			'transport1' => new MultiplierRetryStrategy(2, 1, 2, 0),
+		]);
+
+		$failedLocator = new ServicesContainer([
+			'transport1' => $inMemoryTransport2,
+		]);
+
+		$failureListener = new SendFailedMessageToFailureTransportListener(
+			$failedLocator,
+			$logger
+		);
+
+		$retryListener = new SendFailedMessageForRetryListener(
+			$senderLocator,
+			$retryLocator,
+			$logger,
+		);
+
+		$eventDispatcher = new EventDispatcher();
+		$eventDispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(3, $logger));
+		$eventDispatcher->addSubscriber($retryListener);
+		$eventDispatcher->addSubscriber($failureListener);
+
+		$bus = new MessageBus([
+			new SendMessageMiddleware(
+				new SendersLocator(
+					[
+						DummyRetryFailureMessage::class => ['transport1'],
+					],
+					$senderLocator,
+				)
+			),
+			new HandleMessageMiddleware(
+				new HandlersLocator([
+					DummyRetryFailureMessage::class => [$handler],
+				])
+			),
+		]);
+
+		$bus->dispatch(new DummyRetryFailureMessage('foobar'));
+
+		Assert::null($handler->message);
+
+		$envelops1 = $inMemoryTransport1->get();
+		Assert::count(1, $envelops1);
+
+		$envelops2 = $inMemoryTransport2->get();
+		Assert::count(0, $envelops2);
+
+		$worker = new Worker(['transport1' => $inMemoryTransport1], $bus, $eventDispatcher);
+		$worker->run();
+
+		$envelops1 = $inMemoryTransport1->get();
+		Assert::count(0, $envelops1);
+
+		$envelops2 = $inMemoryTransport2->get();
+		Assert::count(1, $envelops2);
+
+		$logs = $logger->obtain();
+		foreach ($logs as $key => $log) {
+			unset($logs[$key]['context']['exception']);
+		}
+
+		Assert::equal([
+			[
+				'level' => 'warning',
+				'message' => 'Error thrown while handling message {class}. Sending for retry #{retryCount} using {delay} ms delay. Error: "{error}"',
+				'context' => [
+					'class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage',
+					'retryCount' => 1,
+					'delay' => 1,
+					'error' => 'Handling "Tests\Mocks\Vendor\DummyRetryFailureMessage" failed: ',
+				],
+			],
+			[
+				'level' => 'warning',
+				'message' => 'Error thrown while handling message {class}. Sending for retry #{retryCount} using {delay} ms delay. Error: "{error}"',
+				'context' => [
+					'class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage',
+					'retryCount' => 2,
+					'delay' => 2,
+					'error' => 'Handling "Tests\Mocks\Vendor\DummyRetryFailureMessage" failed: ',
+				],
+			],
+			[
+				'level' => 'critical',
+				'message' => 'Error thrown while handling message {class}. Removing from transport after {retryCount} retries. Error: "{error}"',
+				'context' => [
+					'class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage',
+					'retryCount' => 2,
+					'error' => 'Handling "Tests\Mocks\Vendor\DummyRetryFailureMessage" failed: ',
+				],
+			],
+			[
+				'level' => 'info',
+				'message' => 'Rejected message {class} will be sent to the failure transport {transport}.',
+				'context' => [
+					'class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage',
+					'transport' => 'Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport',
+				],
+			],
+			[
+				'level' => 'info',
+				'message' => 'Worker stopped due to maximum count of {count} messages processed',
+				'context' => ['count' => 3],
+			],
+		], $logs);
+	}
+
 }
 
 (new MessengerTest())->run();

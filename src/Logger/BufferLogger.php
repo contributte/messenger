@@ -22,7 +22,7 @@ class BufferLogger extends AbstractLogger
 	}
 
 	/**
-	 * @return array<array{message: string|Stringable}>
+	 * @return array<array{message: string|Stringable, context: array<mixed>}>
 	 */
 	public function obtain(): array
 	{
