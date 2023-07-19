@@ -42,8 +42,8 @@ Toolkit::test(function (): void {
 		})
 		->build();
 
-	Assert::type(MultiplierRetryStrategy::class, $container->getByName('messenger.transport.with_default_retry.retry_strategy'));
-	Assert::false($container->hasService('messenger.transport.without_retry.retry_strategy'));
+	Assert::type(MultiplierRetryStrategy::class, $container->getByName('messenger.retry_strategy.with_default_retry'));
+	Assert::false($container->hasService('messenger.retry_strategy.without_retry'));
 });
 
 
@@ -67,7 +67,7 @@ Toolkit::test(static function () {
 		})
 		->build();
 
-	$strategy = $container->getByName('messenger.transport.with_retry.retry_strategy');
+	$strategy = $container->getByName('messenger.retry_strategy.with_retry');
 
 	Assert::type(MultiplierRetryStrategy::class, $strategy);
 
@@ -104,5 +104,5 @@ Toolkit::test(static function () {
 		})
 		->build();
 
-	Assert::type(CustomRetryStrategy::class, $container->getByName('messenger.transport.custom_strategy.retry_strategy'));
+	Assert::type(CustomRetryStrategy::class, $container->getByName('messenger.retry_strategy.custom_strategy'));
 });

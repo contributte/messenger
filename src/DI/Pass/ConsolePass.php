@@ -22,6 +22,7 @@ class ConsolePass extends AbstractPass
 	public function loadPassConfiguration(): void
 	{
 		$builder = $this->extension->getContainerBuilder();
+		$config = $this->getConfig();
 
 		$builder->addDefinition($this->extension->prefix('console.consumeCommand'))
 			->setFactory(ConsumeMessagesCommand::class, [
@@ -42,16 +43,32 @@ class ConsolePass extends AbstractPass
 				->setFactory(StatsCommand::class, [$this->prefix('@transport.container'), []]); // @TODO transportNames
 		}
 
-		if (PHP_VERSION === 'fake') { // @TODO failing queues
-			$builder->addDefinition($this->extension->prefix('console.failedMessageRemoveCommand'))
-				->setFactory(FailedMessagesRemoveCommand::class);
+		$builder->addDefinition($this->extension->prefix('console.failedMessageRemoveCommand'))
+			->setFactory(FailedMessagesRemoveCommand::class, [
+				$config->failureTransport,
+				$this->prefix('@failure_transport.service_provider'),
+				$this->prefix('@serializer.default'),
+			]);
 
-			$builder->addDefinition($this->extension->prefix('console.failedMessageRetryCommand'))
-				->setFactory(FailedMessagesRetryCommand::class);
+		$builder->addDefinition($this->extension->prefix('console.failedMessageRetryCommand'))
+			->setFactory(FailedMessagesRetryCommand::class, [
+				$config->failureTransport,
+				$this->prefix('@failure_transport.service_provider'),
+				$this->prefix('@bus.routable'),
+				$this->prefix('@event.dispatcher'),
+				$this->prefix('@logger.logger'),
+				$this->prefix('@serializer.default'),
+			]);
 
-			$builder->addDefinition($this->extension->prefix('console.failedMessageShowCommand'))
-				->setFactory(FailedMessagesShowCommand::class);
+		$builder->addDefinition($this->extension->prefix('console.failedMessageShowCommand'))
+			->setFactory(FailedMessagesShowCommand::class, [
+				$config->failureTransport,
+				$this->prefix('@failure_transport.service_provider'),
+				$this->prefix('@serializer.default'),
+			]);
 
+		if (PHP_VERSION === 'fake') {
+			// TODO
 			$builder->addDefinition($this->extension->prefix('console.stopWorkersCommand'))
 				->setFactory(StopWorkersCommand::class);
 		}

@@ -6,7 +6,7 @@ use Contributte\Messenger\Container\NetteContainer;
 use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Messenger\DI\Utils\BuilderMan;
 use Contributte\Messenger\DI\Utils\ServiceMan;
-use Nette\DI\Definitions\Definition;
+use Contributte\Messenger\Transport\FailureTransportServiceProvider;
 use Nette\DI\Definitions\ServiceDefinition;
 use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
 
@@ -32,16 +32,17 @@ class TransportPass extends AbstractPass
 
 			$transportDef->addTag(MessengerExtension::TRANSPORT_TAG, $name);
 
-			if ($transport->failureTransport) {
-				$transportDef->addTag(MessengerExtension::FAILURE_TRANSPORT_TAG, $transport->failureTransport);
-			}
-
-            $this->registerRetryStrategyForTransport($transportDef, $transport->retryStrategy);
+			$this->defineFailureForTransport($name, $transport->failureTransport);
+			$this->registerRetryStrategyForTransport($name, $transport->retryStrategy);
 		}
 
 		// Register transports container
 		$builder->addDefinition($this->prefix('transport.container'))
 			->setFactory(NetteContainer::class)
+			->setAutowired(false);
+
+		$builder->addDefinition($this->prefix('failure_transport.service_provider'))
+			->setFactory(FailureTransportServiceProvider::class)
 			->setAutowired(false);
 	}
 
@@ -55,36 +56,57 @@ class TransportPass extends AbstractPass
 		/** @var ServiceDefinition $transportContainerDef */
 		$transportContainerDef = $builder->getDefinition($this->prefix('transport.container'));
 		$transportContainerDef->setArgument(0, BuilderMan::of($this)->getTransports());
+
+		/** @var ServiceDefinition $failureTransportProviderDef */
+		$failureTransportProviderDef = $builder->getDefinition($this->prefix('failure_transport.service_provider'));
+		$failureTransportProviderDef->setArgument(0, BuilderMan::of($this)->getFailedTransports());
 	}
 
-    /**
-     * @param null|object{service: null|string, maxRetries: int, delay: int, multiplier: int, maxDelay: int} $strategy
-     */
-    private function registerRetryStrategyForTransport(Definition $transportDev, null|object $strategy): void
-    {
-        if ($strategy === null) {
-            return;
-        }
+	private function defineFailureForTransport(string $transportName, null|string $failureTransport): void
+	{
+		$builder = $this->getContainerBuilder();
+		$config = $this->getConfig();
 
-        $builder = $this->getContainerBuilder();
+		/** @var string|null $globalFailureTransport */
+		$globalFailureTransport = $config->failureTransport;
 
-        // Already prefixed, do not need to prefix again
-        $strategyServiceName = sprintf('%s.retry_strategy', $transportDev->getName());
-        $strategyDefinition = $builder->addDefinition($strategyServiceName);
+		if ($globalFailureTransport === null && $failureTransport === null) {
+			return;
+		}
 
-        $transportDev->addTag(MessengerExtension::RETRY_STRATEGY_TAG, $strategyServiceName);
+		$failureTransport ??= $globalFailureTransport;
 
-        if ($strategy->service !== null) {
-            $strategyDefinition->setFactory($strategy->service);
+		$transportDefinition = $builder->getDefinition($this->prefix(sprintf('transport.%s', $transportName)));
+		$transportDefinition->addTag(MessengerExtension::FAILURE_TRANSPORT_TAG, $failureTransport);
+	}
 
-            return;
-        }
+	/**
+	 * @param object{service: string|null, maxRetries: int, delay: int, multiplier: int, maxDelay: int}|null $strategy
+	 */
+	private function registerRetryStrategyForTransport(string $transportName, null|object $strategy): void
+	{
+		if ($strategy === null) {
+			return;
+		}
 
-        $strategyDefinition->setFactory(MultiplierRetryStrategy::class, [
-            $strategy->maxRetries,
-            $strategy->delay,
-            (float) $strategy->multiplier,
-            $strategy->maxDelay,
-        ]);
-    }
+		$builder = $this->getContainerBuilder();
+
+		$strategyServiceName = $this->prefix(sprintf('retry_strategy.%s', $transportName));
+		$strategyDefinition = $builder->addDefinition($strategyServiceName);
+		$strategyDefinition->addTag(MessengerExtension::RETRY_STRATEGY_TAG, $transportName);
+
+		if ($strategy->service !== null) {
+			$strategyDefinition->setFactory($strategy->service);
+
+			return;
+		}
+
+		$strategyDefinition->setFactory(MultiplierRetryStrategy::class, [
+			$strategy->maxRetries,
+			$strategy->delay,
+			(float) $strategy->multiplier,
+			$strategy->maxDelay,
+		]);
+	}
+
 }

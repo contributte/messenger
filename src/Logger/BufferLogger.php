@@ -8,7 +8,7 @@ use Stringable;
 class BufferLogger extends AbstractLogger
 {
 
-	/** @var array<array{message: string|Stringable}> */
+	/** @var array<array{message: string|Stringable, context?: array<mixed>}> */
 	private array $logs = [];
 
 	/**
@@ -22,7 +22,7 @@ class BufferLogger extends AbstractLogger
 	}
 
 	/**
-	 * @return array<array{message: string|Stringable, context: array<mixed>}>
+	 * @return array<array{message: string|Stringable, context?: array<mixed>}>
 	 */
 	public function obtain(): array
 	{

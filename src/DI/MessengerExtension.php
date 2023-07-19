@@ -19,7 +19,6 @@ use Nette\PhpGenerator\ClassType;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
 use Nette\Utils\ArrayHash;
-use PhpOffice\PhpSpreadsheet\Calculation\MathTrig\Exp;
 use stdClass;
 
 /**
@@ -97,13 +96,14 @@ class MessengerExtension extends CompilerExtension
 				$expectService,
 				Expect::string()->required()
 			),
+			'failureTransport' => Expect::string(),
 			'transport' => Expect::arrayOf(
 				Expect::structure([
 					'dsn' => Expect::string()->required()->dynamic(),
 					'options' => Expect::array(),
 					'serializer' => $expectService,
 					'failureTransport' => Expect::string(),
-                    'retryStrategy' => Expect::anyOf(
+					'retryStrategy' => Expect::anyOf(
 						null,
 						Expect::structure([
 							'maxRetries' => Expect::int(),
