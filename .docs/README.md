@@ -118,6 +118,10 @@ messenger:
         # inMemory: Symfony\Component\Messenger\Transport\InMemoryTransportFactory
         # inMemory: @customMemoryTransportFactory
 
+    # after retrying, messages will be sent to the "failed" transport
+    # by default if no "failureTransport" is configured inside a transport
+    failureTransport: failed
+
     transport:
         redis:
             dsn: "redis://localhost?dbIndex=1"
@@ -125,12 +129,31 @@ messenger:
             serializer: default
             failureTransport: db
 
+        # since no failed transport is configured, the one used will be
+        # the global "failureTransport" set
         memory:
             dsn: in-memory://
             serializer: @customSerializer
+             # default configuration
+            retryStrategy:
+                maxRetries: 3
+                # milliseconds delay
+                delay: 1000
+                # causes the delay to be higher before each retry
+                # e.g. 1 second delay, 2 seconds, 4 seconds
+                multiplier: 2
+                maxDelay: 0
+                # override all of this with a service that
+                # implements Symfony\Component\Messenger\Retry\RetryStrategyInterface
+                # service: @App\RetryStrategy\CustomRetryStrategy
 
         db:
             dsn: doctrine://postgres:password@localhost:5432
+            # to disable retry
+            retryStrategy: null
+
+        failed:
+            dsn: doctrine://postgres:password@localhost:5432?queue_name=failed
 
     routing:
         App\Domain\NewUserEmail: [redis]
@@ -141,6 +164,7 @@ services:
     - App\Domain\LogTextHandler
     - App\Domain\NewUserEmailHandler
     - App\Domain\ForgotPasswordEmailHandler
+    - App\RetryStrategy\CustomRetryStrategy
 ```
 
 ### Message
@@ -241,11 +265,7 @@ extensions:
 
 **Roadmap**
 
-- No PCNTL listeners registered.
-- No retry_strategy overrides (max_retries, delay, multiply, max_delay).
-- No failing queue settings.
 - No fallbackBus in RoutableMessageBus.
-- No failing console commands.
 - No debug console commands.
 
 **No ETA**
