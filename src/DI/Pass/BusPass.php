@@ -13,6 +13,7 @@ use Contributte\Messenger\Handler\ContainerServiceHandlersLocator;
 use Nette\DI\Definitions\ServiceDefinition;
 use Symfony\Component\Messenger\MessageBus as SymfonyMessageBus;
 use Symfony\Component\Messenger\Middleware\AddBusNameStampMiddleware;
+use Symfony\Component\Messenger\Middleware\FailedMessageProcessingMiddleware;
 use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 use Symfony\Component\Messenger\Middleware\SendMessageMiddleware;
 use Symfony\Component\Messenger\RoutableMessageBus;
@@ -50,6 +51,10 @@ class BusPass extends AbstractPass
 
 			$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.busStampMiddleware', $name)))
 				->setFactory(AddBusNameStampMiddleware::class, [$name])
+				->setAutowired(false);
+
+			$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.failedMessageProcessingMiddleware', $name)))
+				->setFactory(FailedMessageProcessingMiddleware::class)
 				->setAutowired(false);
 
 			$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.sendMiddleware', $name)))

@@ -306,6 +306,7 @@ final class MessengerTest extends TestCase
 		$eventDispatcher->addSubscriber($failureListener);
 
 		$bus = new MessageBus([
+			new FailedMessageProcessingMiddleware(),
 			new SendMessageMiddleware(
 				new SendersLocator(
 					[
