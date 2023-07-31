@@ -7,8 +7,10 @@ use Nette\DI\Container;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
-/** @implements ServiceProviderInterface<TransportInterface> */
-final class FailureTransportServiceProvider implements ServiceProviderInterface
+/**
+ * @implements ServiceProviderInterface<TransportInterface>
+ */
+class FailureTransportServiceProvider implements ServiceProviderInterface
 {
 
 	/** @var array<string, string> */
