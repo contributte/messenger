@@ -46,14 +46,14 @@ class ConsolePass extends AbstractPass
 		$builder->addDefinition($this->extension->prefix('console.failedMessageRemoveCommand'))
 			->setFactory(FailedMessagesRemoveCommand::class, [
 				$config->failureTransport,
-				$this->prefix('@failure_transport.service_provider'),
+				$this->prefix('@failureTransport.serviceProvider'),
 				$this->prefix('@serializer.default'),
 			]);
 
 		$builder->addDefinition($this->extension->prefix('console.failedMessageRetryCommand'))
 			->setFactory(FailedMessagesRetryCommand::class, [
 				$config->failureTransport,
-				$this->prefix('@failure_transport.service_provider'),
+				$this->prefix('@failureTransport.serviceProvider'),
 				$this->prefix('@bus.routable'),
 				$this->prefix('@event.dispatcher'),
 				$this->prefix('@logger.logger'),
@@ -63,7 +63,7 @@ class ConsolePass extends AbstractPass
 		$builder->addDefinition($this->extension->prefix('console.failedMessageShowCommand'))
 			->setFactory(FailedMessagesShowCommand::class, [
 				$config->failureTransport,
-				$this->prefix('@failure_transport.service_provider'),
+				$this->prefix('@failureTransport.serviceProvider'),
 				$this->prefix('@serializer.default'),
 			]);
 

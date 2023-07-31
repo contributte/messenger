@@ -25,12 +25,12 @@ class EventPass extends AbstractPass
 		$builder = $this->getContainerBuilder();
 
 		// Register container for failure transports
-		$builder->addDefinition($this->prefix('failure_transport.container'))
+		$builder->addDefinition($this->prefix('failureTransport.container'))
 			->setFactory(NetteContainer::class)
 			->setAutowired(false);
 
 		// Register container for retry strategies
-		$builder->addDefinition($this->prefix('retry_strategy.container'))
+		$builder->addDefinition($this->prefix('retryStrategy.container'))
 			->setFactory(NetteContainer::class)
 			->setAutowired(false);
 	}
@@ -43,11 +43,11 @@ class EventPass extends AbstractPass
 		$builder = $this->getContainerBuilder();
 
 		/** @var ServiceDefinition $failureTransportContainerDef */
-		$failureTransportContainerDef = $builder->getDefinition($this->prefix('failure_transport.container'));
+		$failureTransportContainerDef = $builder->getDefinition($this->prefix('failureTransport.container'));
 		$failureTransportContainerDef->setArgument(0, BuilderMan::of($this)->getTransportToFailureTransportsServiceMapping());
 
 		/** @var ServiceDefinition $retryStrategyContainerDef */
-		$retryStrategyContainerDef = $builder->getDefinition($this->prefix('retry_strategy.container'));
+		$retryStrategyContainerDef = $builder->getDefinition($this->prefix('retryStrategy.container'));
 		$retryStrategyContainerDef->setArgument(0, BuilderMan::of($this)->getRetryStrategies());
 
 		$dispatcherServiceName = $builder->getByType(EventDispatcherInterface::class);
@@ -68,40 +68,38 @@ class EventPass extends AbstractPass
 		$dispatcher = $builder->getDefinition($this->prefix('event.dispatcher'));
 		assert($dispatcher instanceof ServiceDefinition);
 
-		foreach ($this->getSubscribers() as $subscriber) {
-			$dispatcher->addSetup('addSubscriber', [$subscriber]);
-		}
-	}
-
-	/**
-	 * @return array<Statement>
-	 */
-	private function getSubscribers(): array
-	{
-		$subscribers = [
+		// PCNTL
+		$dispatcher->addSetup('addSubscriber', [
 			new Statement(DispatchPcntlSignalListener::class),
-			new Statement(
-				SendFailedMessageForRetryListener::class,
-				[
-					$this->prefix('@transport.container'),
-					$this->prefix('@retry_strategy.container'),
-					$this->prefix('@logger.logger'),
-				]
-			),
-			new Statement(
-				SendFailedMessageToFailureTransportListener::class,
-				[
-					$this->prefix('@failure_transport.container'),
-					$this->prefix('@logger.logger'),
-				]
-			),
-		];
+		]);
 
-		$subscribers[] = class_exists(StopWorkerOnSignalsListener::class)
-			? new Statement(StopWorkerOnSignalsListener::class, [null, $this->prefix('@logger.logger')])
-			: new Statement(StopWorkerOnSigtermSignalListener::class, [$this->prefix('@logger.logger')]); // @phpstan-ignore-line
+		// Retry
+		$dispatcher->addSetup('addSubscriber', [
+			new Statement(SendFailedMessageForRetryListener::class, [
+				$this->prefix('@transport.container'),
+				$this->prefix('@retryStrategy.container'),
+				$this->prefix('@logger.logger'),
+			]),
+		]);
 
-		return $subscribers;
+		// Failure
+		$dispatcher->addSetup('addSubscriber', [
+			new Statement(SendFailedMessageToFailureTransportListener::class, [
+				$this->prefix('@failureTransport.container'),
+				$this->prefix('@logger.logger'),
+			]),
+		]);
+
+		// Stop on signal
+		if (class_exists(StopWorkerOnSignalsListener::class)) {
+			$dispatcher->addSetup('addSubscriber', [
+				new Statement(StopWorkerOnSignalsListener::class, [null, $this->prefix('@logger.logger')]),
+			]);
+		} else {
+			$dispatcher->addSetup('addSubscriber', [
+				new Statement(StopWorkerOnSigtermSignalListener::class, [$this->prefix('@logger.logger')]), // @phpstan-ignore-line
+			]);
+		}
 	}
 
 }
