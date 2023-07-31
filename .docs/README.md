@@ -84,11 +84,14 @@ Full configuration example:
 
 ```neon
 messenger:
+    # Enable or disable Tracy debug panel
     debug:
         panel: %debugMode%
 
+    # Defines buses, default one are messageBus, queryBus and commandBus.
     bus:
         messageBus:
+            # Define middlewares just for this bus.
             middlewares:
                 #- LoggerMiddleware()
                 #- @loggerMiddleware
@@ -100,16 +103,21 @@ messenger:
         queryBus:
             autowired: false
 
+    # Defines serializers.
     serializer:
         default: Symfony\Component\Messenger\Transport\Serialization\PhpSerializer
         # custom: @customSerializer
 
+    # Defines loggers.
+    # - httpLogger is used in your presenters/controllers
+    # - consoleLogger is used in symfony/console commands
     logger:
         httpLogger: Psr\Log\NullLogger
         # httpLogger: @specialLogger
         consoleLogger: Symfony\Component\Console\Logger\ConsoleLogger
         # consoleLogger: @specialLogger
 
+    # Defines transport factories.
     transportFactory:
         # redis: Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransportFactory
         # sync: Symfony\Component\Messenger\Transport\Sync\SyncTransportFactorya
@@ -118,23 +126,40 @@ messenger:
         # inMemory: Symfony\Component\Messenger\Transport\InMemoryTransportFactory
         # inMemory: @customMemoryTransportFactory
 
-    # after retrying, messages will be sent to the "failed" transport
-    # by default if no "failureTransport" is configured inside a transport
+    # Defines global failure transport. Default is none.
+    # - After retrying, messages will be sent to the "failed" transport.
+    # - By default if no "failureTransport" is configured inside a transport global will be used.
     failureTransport: failed
 
+    # Define transports (async or sync)
     transport:
+
+        # Redis (async) transport
         redis:
             dsn: "redis://localhost?dbIndex=1"
             options: []
             serializer: default
             failureTransport: db
 
-        # since no failed transport is configured, the one used will be
-        # the global "failureTransport" set
+        # Doctrine (async) transport
+        db:
+            dsn: doctrine://postgres:password@localhost:5432
+            # to disable retry
+            retryStrategy: null
+
+        # Sync transport
+        sync:
+            dsn: sync://
+
+        # In memory (sync) transport
         memory:
             dsn: in-memory://
             serializer: @customSerializer
-             # default configuration
+
+            # Since no failed transport is configured, the one used will be the global "failureTransport" set
+            # failureTransport: db
+
+            # Retry configuration.
             retryStrategy:
                 maxRetries: 3
                 # milliseconds delay
@@ -147,14 +172,12 @@ messenger:
                 # implements Symfony\Component\Messenger\Retry\RetryStrategyInterface
                 # service: @App\RetryStrategy\CustomRetryStrategy
 
-        db:
-            dsn: doctrine://postgres:password@localhost:5432
-            # to disable retry
-            retryStrategy: null
 
+        # Doctrine (async) transport
         failed:
             dsn: doctrine://postgres:password@localhost:5432?queue_name=failed
 
+    # Defines routing (message -> transport)
     routing:
         App\Domain\NewUserEmail: [redis]
         App\Domain\ForgotPasswordEmail: [db, redis]
