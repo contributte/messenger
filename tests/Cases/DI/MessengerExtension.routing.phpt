@@ -120,7 +120,7 @@ Toolkit::test(function (): void {
 // No transport
 Toolkit::test(function (): void {
 	Assert::exception(
-		static function() {
+		static function (): void {
 			Container::of()
 				->withDefaults()
 				->withCompiler(function (Compiler $compiler): void {
@@ -141,7 +141,7 @@ Toolkit::test(function (): void {
 // Invalid transport
 Toolkit::test(function (): void {
 	Assert::exception(
-		static function() {
+		static function (): void {
 			Container::of()
 				->withDefaults()
 				->withCompiler(function (Compiler $compiler): void {

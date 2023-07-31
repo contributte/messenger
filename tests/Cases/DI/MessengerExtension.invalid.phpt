@@ -2,7 +2,6 @@
 
 namespace Tests\Cases\DI;
 
-use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
 use Nette\DI\InvalidConfigurationException;
@@ -27,4 +26,3 @@ Toolkit::test(function (): void {
 			->build();
 	}, InvalidConfigurationException::class, "Unexpected item 'messenger › foo'.");
 });
-

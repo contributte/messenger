@@ -31,4 +31,3 @@ Toolkit::test(function (): void {
 
 	Assert::count(4, $container->findByType(SerializerInterface::class));
 });
-

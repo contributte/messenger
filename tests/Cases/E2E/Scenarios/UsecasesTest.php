@@ -8,7 +8,6 @@ use LogicException;
 use Nette\DI\Compiler;
 use Nette\DI\Definitions\Statement;
 use Nette\DI\Extensions\ExtensionsExtension;
-use Nette\Neon\Neon;
 use Nette\Schema\Elements\Structure;
 use Nette\Schema\Expect;
 use Nette\Schema\Processor;
@@ -27,16 +26,20 @@ final class UsecasesTest extends TestCase
 
 	/**
 	 * @dataProvider provideUsecases
+	 * @param mixed[] $usecase
 	 */
 	public function testUsecase(string $file, array $usecase): void
 	{
 		try {
 			$this->process($usecase);
 		} catch (Throwable $e) {
-			throw new LogicException("File: {$file}", 0, $e);
+			throw new LogicException(sprintf('File: %s', $file), 0, $e);
 		}
 	}
 
+	/**
+	 * @return array<string, array{string, string}>
+	 */
 	public function provideUsecases(): iterable
 	{
 		$finder = Finder::findFiles('*.neon')->from(__DIR__ . '/__files__');

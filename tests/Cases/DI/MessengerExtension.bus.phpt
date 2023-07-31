@@ -33,7 +33,7 @@ Toolkit::test(function (): void {
 		->build();
 
 	Assert::count(3, $container->findByType(MessageBus::class));
-	Assert::count(3 * 3, $container->findByType(MiddlewareInterface::class));
+	Assert::count(3 * 4, $container->findByType(MiddlewareInterface::class));
 });
 
 // Buses with middlewares
@@ -57,7 +57,7 @@ Toolkit::test(function (): void {
 		->build();
 
 	Assert::count(1, $container->findByType(MessageBus::class));
-	Assert::count(6, $container->findByType(MiddlewareInterface::class));
+	Assert::count(7, $container->findByType(MiddlewareInterface::class));
 });
 
 // Bus container

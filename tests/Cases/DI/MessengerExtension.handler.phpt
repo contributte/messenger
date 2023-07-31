@@ -2,13 +2,8 @@
 
 namespace Tests\Cases\DI;
 
-use Contributte\EventDispatcher\DI\EventDispatcherExtension;
 use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Messenger\MessageBus;
-use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Tester\Assert;
 use Tests\Mocks\Handler\SimpleHandler;

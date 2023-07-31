@@ -35,11 +35,11 @@ Toolkit::test(function (): void {
 	$services = $container->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG);
 
 	Assert::same([
-		'messenger.transport.transport2' => 'transport1'
+		'messenger.transport.transport2' => 'transport1',
 	], $services);
 
 	/** @var FailureTransportServiceProvider $serviceProvider */
-	$serviceProvider = $container->getService('messenger.failure_transport.service_provider');
+	$serviceProvider = $container->getService('messenger.failureTransport.serviceProvider');
 	Assert::type(FailureTransportServiceProvider::class, $serviceProvider);
 	Assert::same([
 		'transport1' => 'messenger.transport.transport1',
@@ -49,8 +49,8 @@ Toolkit::test(function (): void {
 
 // Test invalid global failed transport name
 Toolkit::test(function (): void {
-	Assert::exception(fn() =>
-		Container::of()
+	Assert::exception(
+		fn () => Container::of()
 			->withDefaults()
 			->withCompiler(function (Compiler $compiler): void {
 				$compiler->addConfig(Helpers::neon(<<<'NEON'
@@ -71,10 +71,10 @@ Toolkit::test(function (): void {
 
 // Test invalid failed transport name
 Toolkit::test(function (): void {
-	Assert::exception(fn() =>
-	Container::of()
-		->withDefaults()
-		->withCompiler(function (Compiler $compiler): void {
+	Assert::exception(
+		fn () => Container::of()
+			->withDefaults()
+			->withCompiler(function (Compiler $compiler): void {
 			$compiler->addConfig(Helpers::neon(<<<'NEON'
 					messenger:
 						transport:
@@ -86,7 +86,7 @@ Toolkit::test(function (): void {
 								failureTransport: transport3
 				NEON
 			));
-		})
+			})
 		->build(),
 		LogicalException::class,
 		'Invalid failure transport "transport3" defined for "transport2" transport. Available transports "transport1, transport2".',
@@ -94,7 +94,7 @@ Toolkit::test(function (): void {
 });
 
 // Test with global failed transport defined
-Toolkit::test(static function () {
+Toolkit::test(static function (): void {
 	$container = Container::of()
 		->withDefaults()
 		->withCompiler(function (Compiler $compiler): void {
@@ -123,11 +123,11 @@ Toolkit::test(static function () {
 	Assert::same([
 		'messenger.transport.transport1' => 'transport1',
 		'messenger.transport.transport2' => 'transport3',
-		'messenger.transport.transport3' => 'transport1'
+		'messenger.transport.transport3' => 'transport1',
 	], $services);
 
 	/** @var FailureTransportServiceProvider $serviceProvider */
-	$serviceProvider = $container->getService('messenger.failure_transport.service_provider');
+	$serviceProvider = $container->getService('messenger.failureTransport.serviceProvider');
 	Assert::type(FailureTransportServiceProvider::class, $serviceProvider);
 	Assert::same([
 		'transport1' => 'messenger.transport.transport1',

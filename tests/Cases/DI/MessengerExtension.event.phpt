@@ -7,12 +7,12 @@ use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Messenger\EventListener\DispatchPcntlSignalListener;
+use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
+use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
+use Symfony\Component\Messenger\EventListener\StopWorkerOnSignalsListener;
 use Tester\Assert;
 use Tests\Toolkit\Container;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnSignalsListener;
-use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
-use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
-use Symfony\Component\Messenger\EventListener\DispatchPcntlSignalListener;
 
 require_once __DIR__ . '/../../bootstrap.php';
 
@@ -27,7 +27,7 @@ Toolkit::test(function (): void {
 });
 
 // Provided event dispatcher
-Toolkit::test(static function () {
+Toolkit::test(static function (): void {
 	$container = Container::of()
 		->withDefaults()
 		->withCompiler(static function (Compiler $compiler): void {
@@ -46,7 +46,7 @@ Toolkit::test(static function () {
 });
 
 // Event listeners should be registered
-Toolkit::test(static function () {
+Toolkit::test(static function (): void {
 	$container = Container::of()
 		->withDefaults()
 		->withCompiler(static function (Compiler $compiler): void {

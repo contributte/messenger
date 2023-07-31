@@ -25,7 +25,7 @@ Toolkit::test(function (): void {
 });
 
 // Provided event dispatcher
-Toolkit::test(static function () {
+Toolkit::test(static function (): void {
 	$container = Container::of()
 		->withDefaults()
 		->withCompiler(static function (Compiler $compiler): void {

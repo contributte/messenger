@@ -2,20 +2,10 @@
 
 namespace Tests\Cases\DI;
 
-use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
 use ReflectionProperty;
-use Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransport;
-use Symfony\Component\Messenger\Exception\InvalidArgumentException;
-use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
-use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
-use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
-use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
-use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
-use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
-use Symfony\Component\Messenger\Transport\TransportInterface;
 use Tester\Assert;
 use Tests\Mocks\RetryStrategy\CustomRetryStrategy;
 use Tests\Toolkit\Container;
@@ -31,10 +21,10 @@ Toolkit::test(function (): void {
 			$compiler->addConfig(Helpers::neon(<<<'NEON'
 				messenger:
 					transport:
-						with_default_retry:
+						withDefaultRetry:
 							dsn: amqp://
 
-						without_retry:
+						withoutRetry:
 							dsn: amqp://
 							retryStrategy: null
 			NEON
@@ -42,20 +32,20 @@ Toolkit::test(function (): void {
 		})
 		->build();
 
-	Assert::type(MultiplierRetryStrategy::class, $container->getByName('messenger.retry_strategy.with_default_retry'));
-	Assert::false($container->hasService('messenger.retry_strategy.without_retry'));
+	Assert::type(MultiplierRetryStrategy::class, $container->getByName('messenger.transport.withDefaultRetry.retryStrategy'));
+	Assert::false($container->hasService('messenger.withoutRetry.retryStrategy'));
 });
 
 
 // Test retry strategy options
-Toolkit::test(static function () {
+Toolkit::test(static function (): void {
 	$container = Container::of()
 		->withDefaults()
 		->withCompiler(function (Compiler $compiler): void {
 			$compiler->addConfig(Helpers::neon(<<<'NEON'
 				messenger:
 					transport:
-						with_retry:
+						withRetry:
 							dsn: amqp://
 							retryStrategy:
 								maxRetries: 10
@@ -67,7 +57,7 @@ Toolkit::test(static function () {
 		})
 		->build();
 
-	$strategy = $container->getByName('messenger.retry_strategy.with_retry');
+	$strategy = $container->getByName('messenger.transport.withRetry.retryStrategy');
 
 	Assert::type(MultiplierRetryStrategy::class, $strategy);
 
@@ -85,7 +75,7 @@ Toolkit::test(static function () {
 });
 
 // Test strategy with custom params
-Toolkit::test(static function () {
+Toolkit::test(static function (): void {
 	$container = Container::of()
 		->withDefaults()
 		->withCompiler(function (Compiler $compiler): void {
@@ -95,7 +85,7 @@ Toolkit::test(static function () {
 
 				messenger:
 					transport:
-						custom_strategy:
+						custom:
 							dsn: amqp://
 							retryStrategy:
 								service: @customStrategy
@@ -104,5 +94,5 @@ Toolkit::test(static function () {
 		})
 		->build();
 
-	Assert::type(CustomRetryStrategy::class, $container->getByName('messenger.retry_strategy.custom_strategy'));
+	Assert::type(CustomRetryStrategy::class, $container->getByName('messenger.transport.custom.retryStrategy'));
 });
