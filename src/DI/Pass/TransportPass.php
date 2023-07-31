@@ -3,9 +3,9 @@
 namespace Contributte\Messenger\DI\Pass;
 
 use Contributte\Messenger\Container\NetteContainer;
+use Contributte\Messenger\Container\ServiceProviderContainer;
 use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Messenger\DI\Utils\BuilderMan;
-use Contributte\Messenger\Transport\FailureTransportServiceProvider;
 use Nette\DI\Definitions\ServiceDefinition;
 use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
 
@@ -61,7 +61,7 @@ class TransportPass extends AbstractPass
 			->setAutowired(false);
 
 		$builder->addDefinition($this->prefix('failureTransport.serviceProvider'))
-			->setFactory(FailureTransportServiceProvider::class)
+			->setFactory(ServiceProviderContainer::class)
 			->setAutowired(false);
 	}
 

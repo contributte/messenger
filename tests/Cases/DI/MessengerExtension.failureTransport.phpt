@@ -2,9 +2,9 @@
 
 namespace Tests\Cases\DI;
 
+use Contributte\Messenger\Container\ServiceProviderContainer;
 use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Messenger\Exception\LogicalException;
-use Contributte\Messenger\Transport\FailureTransportServiceProvider;
 use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
 use Tester\Assert;
@@ -38,9 +38,9 @@ Toolkit::test(function (): void {
 		'messenger.transport.transport2' => 'transport1',
 	], $services);
 
-	/** @var FailureTransportServiceProvider $serviceProvider */
+	/** @var ServiceProviderContainer $serviceProvider */
 	$serviceProvider = $container->getService('messenger.failureTransport.serviceProvider');
-	Assert::type(FailureTransportServiceProvider::class, $serviceProvider);
+	Assert::type(ServiceProviderContainer::class, $serviceProvider);
 	Assert::same([
 		'transport1' => 'messenger.transport.transport1',
 	], $serviceProvider->getProvidedServices());
@@ -126,9 +126,9 @@ Toolkit::test(static function (): void {
 		'messenger.transport.transport3' => 'transport1',
 	], $services);
 
-	/** @var FailureTransportServiceProvider $serviceProvider */
+	/** @var ServiceProviderContainer $serviceProvider */
 	$serviceProvider = $container->getService('messenger.failureTransport.serviceProvider');
-	Assert::type(FailureTransportServiceProvider::class, $serviceProvider);
+	Assert::type(ServiceProviderContainer::class, $serviceProvider);
 	Assert::same([
 		'transport1' => 'messenger.transport.transport1',
 		'transport3' => 'messenger.transport.transport3',
