@@ -63,7 +63,11 @@ class MessengerExtension extends CompilerExtension
 		$expectClass = Expect::string()->required()->assert(fn ($input) => class_exists($input) || interface_exists($input));
 		$expectService = Expect::anyOf(
 			Expect::string()->required()->assert(fn ($input) => str_starts_with($input, '@') || class_exists($input) || interface_exists($input)),
-			Expect::type(Statement::class),
+			Expect::type(Statement::class)->required(),
+		);
+		$expectLoosyService = Expect::anyOf(
+			Expect::string()->required(),
+			Expect::type(Statement::class)->required(),
 		);
 
 		return Expect::structure([
@@ -101,7 +105,7 @@ class MessengerExtension extends CompilerExtension
 				Expect::structure([
 					'dsn' => Expect::string()->required()->dynamic(),
 					'options' => Expect::array(),
-					'serializer' => $expectService,
+					'serializer' => $expectLoosyService,
 					'failureTransport' => Expect::string(),
 					'retryStrategy' => Expect::anyOf(
 						null,
@@ -110,7 +114,7 @@ class MessengerExtension extends CompilerExtension
 							'delay' => Expect::int(),
 							'multiplier' => Expect::anyOf(Expect::int(), Expect::float())->castTo('float'),
 							'maxDelay' => Expect::int(),
-							'service' => $expectService->nullable(),
+							'service' => (clone $expectService)->nullable(),
 						]),
 					)->default(ArrayHash::from([
 						'maxRetries' => 3,
