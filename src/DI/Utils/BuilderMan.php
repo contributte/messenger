@@ -6,6 +6,7 @@ use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Messenger\DI\Pass\AbstractPass;
 use Contributte\Messenger\Exception\LogicalException;
 use Nette\DI\Definitions\Definition;
+use Nette\DI\Definitions\Statement;
 
 final class BuilderMan
 {
@@ -27,7 +28,7 @@ final class BuilderMan
 	 */
 	public function getBuses(): array
 	{
-		return $this->getServiceNames(MessengerExtension::BUS_TAG);
+		return $this->getServiceNamesByTag(MessengerExtension::BUS_TAG);
 	}
 
 	/**
@@ -35,7 +36,7 @@ final class BuilderMan
 	 */
 	public function getTransportFactories(): array
 	{
-		return $this->getServiceDefinitions(MessengerExtension::TRANSPORT_FACTORY_TAG);
+		return $this->getServiceDefinitionsByTag(MessengerExtension::TRANSPORT_FACTORY_TAG);
 	}
 
 	/**
@@ -43,7 +44,15 @@ final class BuilderMan
 	 */
 	public function getTransports(): array
 	{
-		return $this->getServiceNames(MessengerExtension::TRANSPORT_TAG);
+		return $this->getServiceNamesByTag(MessengerExtension::TRANSPORT_TAG);
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function getRetryStrategies(): array
+	{
+		return $this->getServiceNamesByTag(MessengerExtension::RETRY_STRATEGY_TAG);
 	}
 
 	/**
@@ -73,44 +82,6 @@ final class BuilderMan
 	}
 
 	/**
-	 * @return array<string, Definition>
-	 */
-	public function getServiceDefinitions(string $tag): array
-	{
-		$builder = $this->pass->getContainerBuilder();
-
-		$definitions = [];
-		foreach ($builder->findByTag($tag) as $serviceName => $tagValue) {
-			$definitions[(string) $tagValue] = $builder->getDefinition($serviceName);
-		}
-
-		return $definitions;
-	}
-
-	/**
-	 * @return array<string, string>
-	 */
-	public function getServiceNames(string $tag): array
-	{
-		$builder = $this->pass->getContainerBuilder();
-
-		$definitions = [];
-		foreach ($builder->findByTag($tag) as $serviceName => $tagValue) {
-			$definitions[(string) $tagValue] = $serviceName;
-		}
-
-		return $definitions;
-	}
-
-	/**
-	 * @return array<string, string>
-	 */
-	public function getRetryStrategies(): array
-	{
-		return $this->getServiceNames(MessengerExtension::RETRY_STRATEGY_TAG);
-	}
-
-	/**
 	 * @return array<string, string>
 	 */
 	public function getFailedTransports(): array
@@ -136,6 +107,53 @@ final class BuilderMan
 		}
 
 		return $transportsMapping;
+	}
+
+	public function getSerializer(string|Statement|null $serializer): Statement|string
+	{
+		if ($serializer === null) {
+			return $this->pass->prefix('@serializer.default');
+		}
+
+		if (is_string($serializer) && !str_starts_with($serializer, '@') && !str_contains($serializer, '\\')) {
+			return $this->pass->prefix(sprintf('@serializer.%s', $serializer));
+		}
+
+		if ($serializer instanceof Statement) {
+			return $serializer;
+		}
+
+		return new Statement($serializer);
+	}
+
+	/**
+	 * @return array<string, Definition>
+	 */
+	private function getServiceDefinitionsByTag(string $tag): array
+	{
+		$builder = $this->pass->getContainerBuilder();
+
+		$definitions = [];
+		foreach ($builder->findByTag($tag) as $serviceName => $tagValue) {
+			$definitions[(string) $tagValue] = $builder->getDefinition($serviceName);
+		}
+
+		return $definitions;
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	private function getServiceNamesByTag(string $tag): array
+	{
+		$builder = $this->pass->getContainerBuilder();
+
+		$definitions = [];
+		foreach ($builder->findByTag($tag) as $serviceName => $tagValue) {
+			$definitions[(string) $tagValue] = $serviceName;
+		}
+
+		return $definitions;
 	}
 
 }
