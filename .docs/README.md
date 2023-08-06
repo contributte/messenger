@@ -91,6 +91,9 @@ messenger:
     # Defines buses, default one are messageBus, queryBus and commandBus.
     bus:
         messageBus:
+            # To disable default middlewares stack (see https://symfony.com/doc/current/messenger.html#middleware)
+            defaultMiddlewares: false
+
             # Define middlewares just for this bus.
             middlewares:
                 #- LoggerMiddleware()

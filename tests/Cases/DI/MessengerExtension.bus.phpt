@@ -33,7 +33,7 @@ Toolkit::test(function (): void {
 		->build();
 
 	Assert::count(3, $container->findByType(MessageBus::class));
-	Assert::count(3 * 4, $container->findByType(MiddlewareInterface::class));
+	Assert::count(3 * 5, $container->findByType(MiddlewareInterface::class));
 });
 
 // Buses with middlewares
@@ -57,7 +57,52 @@ Toolkit::test(function (): void {
 		->build();
 
 	Assert::count(1, $container->findByType(MessageBus::class));
-	Assert::count(7, $container->findByType(MiddlewareInterface::class));
+	Assert::count(8, $container->findByType(MiddlewareInterface::class));
+});
+
+// Default middlewares disabled
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					bus:
+						messageBus:
+							defaultMiddlewares: false
+			NEON
+			));
+		})
+		->build();
+
+	Assert::count(1, $container->findByType(MessageBus::class));
+	Assert::count(0, $container->findByType(MiddlewareInterface::class));
+});
+
+// Default middlewares disabled, with custom middlewares registered
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					bus:
+						commandBus:
+						messageBus:
+							defaultMiddlewares: false
+							middlewares:
+								dummy1: Tests\Mocks\Middleware\SimpleMiddleware
+								dummy2: @middleware
+
+				services:
+					middleware: Tests\Mocks\Middleware\SimpleMiddleware
+			NEON
+			));
+		})
+		->build();
+
+	Assert::count(2, $container->findByType(MessageBus::class));
+	Assert::count(5 + 3, $container->findByType(MiddlewareInterface::class));
 });
 
 // Bus container

@@ -13,6 +13,7 @@ use Contributte\Messenger\Handler\ContainerServiceHandlersLocator;
 use Nette\DI\Definitions\ServiceDefinition;
 use Symfony\Component\Messenger\MessageBus as SymfonyMessageBus;
 use Symfony\Component\Messenger\Middleware\AddBusNameStampMiddleware;
+use Symfony\Component\Messenger\Middleware\DispatchAfterCurrentBusMiddleware;
 use Symfony\Component\Messenger\Middleware\FailedMessageProcessingMiddleware;
 use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 use Symfony\Component\Messenger\Middleware\SendMessageMiddleware;
@@ -43,29 +44,38 @@ class BusPass extends AbstractPass
 				->setFactory(ContainerServiceHandlersLocator::class, [[]])
 				->setAutowired(false);
 
+			if ($busConfig->defaultMiddlewares === true) {
+				$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.busStampMiddleware', $name)))
+					->setFactory(AddBusNameStampMiddleware::class, [$name])
+					->setAutowired(false);
+
+				$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.dispatchAfterCurrentBusMiddleware', $name)))
+					->setFactory(DispatchAfterCurrentBusMiddleware::class)
+					->setAutowired(false);
+
+				$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.failedMessageProcessingMiddleware', $name)))
+					->setFactory(FailedMessageProcessingMiddleware::class)
+					->setAutowired(false);
+			}
+
+			// Custom middlewares
 			foreach ($busConfig->middlewares as $index => $middlewareConfig) {
 				$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.custom%sMiddleware', $name, $index)))
 					->setFactory($middlewareConfig)
 					->setAutowired(false);
 			}
 
-			$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.busStampMiddleware', $name)))
-				->setFactory(AddBusNameStampMiddleware::class, [$name])
-				->setAutowired(false);
+			if ($busConfig->defaultMiddlewares === true) {
+				$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.sendMiddleware', $name)))
+					->setFactory(SendMessageMiddleware::class, [$this->prefix('@routing.locator'), $this->prefix('@event.dispatcher'), $busConfig->allowNoSenders])
+					->setAutowired(false)
+					->addSetup('setLogger', [$this->prefix('@logger.logger')]);
 
-			$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.failedMessageProcessingMiddleware', $name)))
-				->setFactory(FailedMessageProcessingMiddleware::class)
-				->setAutowired(false);
-
-			$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.sendMiddleware', $name)))
-				->setFactory(SendMessageMiddleware::class, [$this->prefix('@routing.locator'), $this->prefix('@event.dispatcher'), $busConfig->allowNoSenders])
-				->setAutowired(false)
-				->addSetup('setLogger', [$this->prefix('@logger.logger')]);
-
-			$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.handleMiddleware', $name)))
-				->setFactory(HandleMessageMiddleware::class, [$this->prefix(sprintf('@bus.%s.locator', $name)), $busConfig->allowNoHandlers])
-				->setAutowired(false)
-				->addSetup('setLogger', [$this->prefix('@logger.logger')]);
+				$middlewares[] = $builder->addDefinition($this->prefix(sprintf('bus.%s.middleware.handleMiddleware', $name)))
+					->setFactory(HandleMessageMiddleware::class, [$this->prefix(sprintf('@bus.%s.locator', $name)), $busConfig->allowNoHandlers])
+					->setAutowired(false)
+					->addSetup('setLogger', [$this->prefix('@logger.logger')]);
+			}
 
 			$builder->addDefinition($this->prefix(sprintf('bus.%s.bus', $name)))
 				->setFactory($busConfig->class ?? SymfonyMessageBus::class, [$middlewares])

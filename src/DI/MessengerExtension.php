@@ -76,6 +76,7 @@ class MessengerExtension extends CompilerExtension
 			]),
 			'bus' => Expect::arrayOf(
 				Expect::structure([
+					'defaultMiddlewares' => Expect::bool(true),
 					'middlewares' => Expect::arrayOf($expectService),
 					'allowNoHandlers' => Expect::bool(false),
 					'allowNoSenders' => Expect::bool(true),
@@ -85,6 +86,7 @@ class MessengerExtension extends CompilerExtension
 				Expect::string()->required(),
 			)->default(ArrayHash::from([
 				'messageBus' => [
+					'defaultMiddlewares' => true,
 					'middlewares' => [],
 					'class' => null,
 					'autowired' => true,
