@@ -171,7 +171,7 @@ messenger:
             dsn: doctrine://postgres:password@localhost:5432?queue_name=failed
 
     # Defines routing (message -> transport)
-    # If the routing for message is missing, the message will be handler by handler immediately when dispatched
+    # If the routing for message is missing, the message will be handled by handler immediately when dispatched
     routing:
         App\Domain\NewUserEmail: [redis]
         App\Domain\ForgotPasswordEmail: [db, redis]
