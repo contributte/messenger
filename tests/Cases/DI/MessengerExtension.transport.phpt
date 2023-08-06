@@ -27,7 +27,7 @@ Toolkit::test(function (): void {
 		->build();
 
 	Assert::count(1, $container->findByType(SerializerInterface::class));
-	Assert::count(4, $container->findByType(MiddlewareInterface::class));
+	Assert::count(5, $container->findByType(MiddlewareInterface::class));
 	Assert::count(5, $container->findByType(TransportFactoryInterface::class));
 	Assert::count(0, $container->findByType(TransportInterface::class));
 });
