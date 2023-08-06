@@ -56,6 +56,31 @@ Toolkit::test(function (): void {
 	Assert::equal('foobar', $handler->message->text);
 });
 
+// Message without routing - handle immediately
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				services:
+					- Tests\Mocks\Handler\SimpleHandler
+			NEON
+			));
+		})
+		->build();
+
+	/** @var BusRegistry $busRegistry */
+	$busRegistry = $container->getByType(BusRegistry::class);
+	$messageBus = $busRegistry->get('messageBus');
+
+	$messageBus->dispatch(new SimpleMessage('foobar'));
+
+	/** @var SimpleHandler $handler */
+	$handler = $container->getByType(SimpleHandler::class);
+
+	Assert::equal('foobar', $handler->message->text);
+});
+
 // No handler
 Toolkit::test(function (): void {
 	$container = Container::of()
