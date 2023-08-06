@@ -89,7 +89,7 @@ class MessengerExtension extends CompilerExtension
 					'class' => null,
 					'autowired' => true,
 					'allowNoHandlers' => false,
-					'allowNoSenders' => false,
+					'allowNoSenders' => true,
 				],
 			])),
 			'serializer' => Expect::arrayOf(
