@@ -222,30 +222,75 @@ final class SimpleMessage
 
 ### Handlers
 
-All handlers must be registered to your [DIC container](https://doc.nette.org/en/dependency-injection) via [Neon files](https://doc.nette.org/en/neon/format). All handlers must
-have [`#[AsMessageHandler]`](https://github.com/symfony/messenger/blob/6e749550d539f787023878fad675b744411db003/Attribute/AsMessageHandler.php) attribute.
-
+All handlers must be registered to your [DIC container](https://doc.nette.org/en/dependency-injection) via [Neon files](https://doc.nette.org/en/neon/format).<br>
+All handlers must also be marked as message handlers to handle messages.
+There are 2 different ways to mark your handlers:
+1. with the neon tag [`contributte.messenger.handler`]:
 ```neon
 services:
-    - App\Domain\SimpleMessageHandler
+    -
+        class: App\SimpleMessageHandler
+        tags:
+            contributte.messenger.handler: # the configuration below is optional
+                bus: event
+                alias: simple
+                method: __invoke
+                handles: App\SimpleMessage
+                priority: 0
+                from_transport: sync
 ```
 
+2. with the attribute [`#[AsMessageHandler]`] (https://github.com/symfony/messenger/blob/6e749550d539f787023878fad675b744411db003/Attribute/AsMessageHandler.php).
 ```php
 <?php declare(strict_types = 1);
 
-namespace App\Domain;
+namespace App;
 
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
 final class SimpleMessageHandler
 {
-
   public function __invoke(SimpleMessage $message): void
   {
     // Do your magic
   }
+}
+```
 
+It is also possible to handle multiple different kinds of messages in a single handler by defining 2 or more methods in it.
+Both the neon tag [`contributte.messenger.handler`] and symfony attribute [`#[AsMessageHandler]`] support this kind of handler setup.
+```neon
+services:
+    -
+        class: App\MultipleMessagesHandler
+        tags:
+            contributte.messenger.handler:
+                -
+                    method: whenFooMessageReceived
+                -
+                    method: whenBarMessageReceived
+```
+```php
+<?php declare(strict_types = 1);
+
+namespace App;
+
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+
+final class MultipleMessagesHandler
+{
+  #[AsMessageHandler]
+  public function whenFooMessageReceived(FooMessage $message): void
+  {
+    // Do your magic
+  }
+
+  #[AsMessageHandler]
+  public function whenBarMessageReceived(BarMessage $message): void
+  {
+    // Do your magic
+  }
 }
 ```
 
@@ -298,11 +343,6 @@ extensions:
 
 - No fallbackBus in RoutableMessageBus.
 - No debug console commands.
-
-**No ETA**
-
-- MessageHandler can handle only 1 message.
-- MessageHandler can have only `__invoke` method.
 
 ## Examples
 
