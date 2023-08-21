@@ -84,7 +84,7 @@ class BusPass extends AbstractPass
 				->setTags([MessengerExtension::BUS_TAG => $name]);
 
 			// Register bus wrapper
-			if ($busConfig->wrapper || isset(self::BUS_WRAPPERS[$name])) {
+			if (isset($busConfig->wrapper) || isset(self::BUS_WRAPPERS[$name])) {
 				$builder->addDefinition($this->prefix(sprintf('bus.%s.wrapper', $name)))
 					->setFactory($busConfig->wrapper ?? self::BUS_WRAPPERS[$name], [$this->prefix(sprintf('@bus.%s.bus', $name))]);
 			}
