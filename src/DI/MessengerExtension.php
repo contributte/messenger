@@ -20,6 +20,7 @@ use Nette\Schema\Expect;
 use Nette\Schema\Schema;
 use Nette\Utils\ArrayHash;
 use stdClass;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * @property-write stdClass $config
@@ -77,11 +78,12 @@ class MessengerExtension extends CompilerExtension
 			'bus' => Expect::arrayOf(
 				Expect::structure([
 					'defaultMiddlewares' => Expect::bool(true),
-					'middlewares' => Expect::arrayOf($expectService),
+					'middlewares' => Expect::arrayOf((clone $expectService)),
 					'allowNoHandlers' => Expect::bool(false),
 					'allowNoSenders' => Expect::bool(true),
 					'autowired' => Expect::bool(),
-					'class' => Expect::string(),
+					'class' => (clone $expectClass)->required(false)->assert(fn ($input) => is_subclass_of($input, MessageBusInterface::class), 'Specified bus class must implements "MessageBusInterface"'),
+					'wrapper' => (clone $expectClass)->required(false),
 				]),
 				Expect::string()->required(),
 			)->default(ArrayHash::from([
@@ -107,7 +109,7 @@ class MessengerExtension extends CompilerExtension
 				Expect::structure([
 					'dsn' => Expect::string()->required()->dynamic(),
 					'options' => Expect::array(),
-					'serializer' => $expectLoosyService,
+					'serializer' => (clone $expectLoosyService),
 					'failureTransport' => Expect::string(),
 					'retryStrategy' => Expect::anyOf(
 						null,

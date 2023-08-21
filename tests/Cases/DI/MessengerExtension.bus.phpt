@@ -4,10 +4,12 @@ namespace Tests\Cases\DI;
 
 use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
+use Nette\DI\InvalidConfigurationException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Tester\Assert;
+use Tests\Mocks\Bus\BusWrapper;
 use Tests\Toolkit\Container;
 use Tests\Toolkit\Helpers;
 
@@ -127,4 +129,40 @@ Toolkit::test(function (): void {
 	Assert::type(MessageBus::class, $busContainer->get('messageBus'));
 	Assert::type(MessageBus::class, $busContainer->get('commandBus'));
 	Assert::type(MessageBus::class, $busContainer->get('eventBus'));
+});
+
+// Invalid bus class
+Toolkit::test(function (): void {
+	Assert::exception(static function (): void {
+		Container::of()
+			->withDefaults()
+			->withCompiler(function (Compiler $compiler): void {
+				$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					bus:
+						messageBus:
+							class: Tests\Mocks\Bus\InvalidBus
+			NEON
+				));
+			})
+			->build();
+	}, InvalidConfigurationException::class, "Failed assertion 'Specified bus class must implements \"MessageBusInterface\"' for item 'messenger › bus › messageBus › class' with value 'Tests\Mocks...'.");
+});
+
+// Bus class
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					bus:
+						messageBus:
+							wrapper: Tests\Mocks\Bus\BusWrapper
+			NEON
+			));
+		})
+		->build();
+
+	Assert::type(BusWrapper::class, $container->getByType(BusWrapper::class));
 });

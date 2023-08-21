@@ -101,7 +101,12 @@ messenger:
             autowired: true
             allowNoHandlers: false
             allowNoSenders: true
+
+            # Defined class must implement MessageBusInterface
             class: App\Model\Bus\MyMessageBus
+
+            # Define wrapper class for easy autowiring between multiple buses (eventBus, messageBus, commandBus, ...)
+            wrapper: App\Model\Bus\CommandBus
 
         queryBus:
             autowired: false

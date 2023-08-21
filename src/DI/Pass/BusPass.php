@@ -77,15 +77,16 @@ class BusPass extends AbstractPass
 					->addSetup('setLogger', [$this->prefix('@logger.logger')]);
 			}
 
+			// Register message bus
 			$builder->addDefinition($this->prefix(sprintf('bus.%s.bus', $name)))
 				->setFactory($busConfig->class ?? SymfonyMessageBus::class, [$middlewares])
 				->setAutowired($busConfig->autowired ?? count($builder->findByTag(MessengerExtension::BUS_TAG)) === 0)
 				->setTags([MessengerExtension::BUS_TAG => $name]);
 
 			// Register bus wrapper
-			if (isset(self::BUS_WRAPPERS[$name])) {
+			if ($busConfig->wrapper || isset(self::BUS_WRAPPERS[$name])) {
 				$builder->addDefinition($this->prefix(sprintf('bus.%s.wrapper', $name)))
-					->setFactory(self::BUS_WRAPPERS[$name], [$this->prefix(sprintf('@bus.%s.bus', $name))]);
+					->setFactory($busConfig->wrapper ?? self::BUS_WRAPPERS[$name], [$this->prefix(sprintf('@bus.%s.bus', $name))]);
 			}
 		}
 
