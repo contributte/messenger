@@ -30,36 +30,71 @@ class ContainerServiceHandlersLocator implements HandlersLocatorInterface
 	 */
 	public function getHandlers(Envelope $envelope): iterable
 	{
-		$handlers = [];
+		$seen = [];
 
-		$class = get_class($envelope->getMessage());
+		foreach (self::listTypes($envelope) as $type) {
+			foreach ($this->map[$type] ?? [] as $mapConfig) {
+				$service = $this->context->getService($mapConfig['service']);
 
-		foreach ($this->map[$class] ?? [] as $mapConfig) {
-			$service = $this->context->getService($mapConfig['service']);
+				// Handler has Handler::__invoke method
+				$handler = [$service, $mapConfig['method']];
+				assert(is_callable($handler));
 
-			// Handler has Handler::__invoke method
-			$handler = [$service, $mapConfig['method']];
-			assert(is_callable($handler));
+				$descriptor = new HandlerDescriptor($handler, $mapConfig);
 
-			$descriptor = new HandlerDescriptor($handler, $mapConfig);
+				// Check if from_transport is OK
+				if (!$this->shouldHandle($envelope, $descriptor)) {
+					continue;
+				}
 
-			// Check if from_transport is OK
-			if (!$this->shouldHandle($envelope, $descriptor)) {
-				continue;
+				// Skip if handler is already seen
+				$name = $descriptor->getName();
+				if (in_array($name, $seen, true)) {
+					continue;
+				}
+
+				// Track seen handlers
+				$seen[] = $name;
+
+				yield $descriptor;
 			}
+		}
+	}
 
-			// Create handler descriptor
-			$handlers[] = $descriptor;
+	/**
+	 * @return array<string, class-string>
+	 */
+	protected function listTypes(Envelope $envelope): array
+	{
+		$class = $envelope->getMessage()::class;
+
+		return [$class => $class]
+			+ class_parents($class)
+			+ class_implements($class)
+			+ self::listWildcards($class)
+			+ ['*' => '*'];
+	}
+
+	/**
+	 * @return array<string>
+	 */
+	protected function listWildcards(string $type): array
+	{
+		$type .= '\*';
+		$wildcards = [];
+		while ($i = strrpos($type, '\\', -3)) {
+			$type = substr_replace($type, '\*', $i);
+			$wildcards[$type] = $type;
 		}
 
-		return $handlers;
+		return $wildcards;
 	}
 
 	protected function shouldHandle(Envelope $envelope, HandlerDescriptor $handlerDescriptor): bool
 	{
 		$received = $envelope->last(ReceivedStamp::class);
 
-		if (!$received instanceof ReceivedStamp) {
+		if ($received === null) {
 			return true;
 		}
 

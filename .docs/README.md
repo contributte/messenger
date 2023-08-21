@@ -186,6 +186,12 @@ messenger:
         App\Domain\ForgotPasswordEmail: [db, redis]
         App\Domain\LogText: [db]
 
+        # Route interface
+        App\Domain\SomeMessageInterface: [db]
+
+        # Route wildcard
+        *: [sync]
+
 services:
     - App\Domain\LogTextHandler
     - App\Domain\NewUserEmailHandler

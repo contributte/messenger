@@ -6,6 +6,7 @@ use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Messenger\DI\Utils\Reflector;
 use Contributte\Messenger\Exception\LogicalException;
 use Nette\DI\Definitions\ServiceDefinition;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionException;
 use stdClass;
@@ -63,15 +64,16 @@ class HandlerPass extends AbstractPass
 				];
 
 				// Drain service attribute
-				/** @var AsMessageHandler[] $attributes */
+				/** @var array<ReflectionAttribute<AsMessageHandler>> $attributes */
 				$attributes = $rc->getAttributes(AsMessageHandler::class);
-				$attributeHandler = $attributes[0] ?? new stdClass();
+				/** @var AsMessageHandler $attributeHandler */
+				$attributeHandler = isset($attributes[0]) ? $attributes[0]->getArguments() : new stdClass();
 				$attributeOptions = [
-					'bus' => $attributeHandler->bus ?? null,
-					'method' => $attributeHandler->method ?? null,
-					'priority' => $attributeHandler->priority ?? null,
-					'handles' => $attributeHandler->handles ?? null,
-					'from_transport' => $attributeHandler->fromTransport ?? null,
+					'bus' => $attributeHandler['bus'] ?? null,
+					'method' => $attributeHandler['method'] ?? null,
+					'priority' => $attributeHandler['priority'] ?? null,
+					'handles' => $attributeHandler['handles'] ?? null,
+					'from_transport' => $attributeHandler['fromTransport'] ?? null,
 				];
 
 				// Complete final options

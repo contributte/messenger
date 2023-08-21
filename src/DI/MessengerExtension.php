@@ -132,7 +132,10 @@ class MessengerExtension extends CompilerExtension
 				Expect::arrayOf(
 					Expect::string()->required(),
 				),
-				$expectClass
+				Expect::anyOf(
+					Expect::string()->required(),
+					$expectClass
+				)
 			),
 			'logger' => Expect::structure([
 				'httpLogger' => $expectService,

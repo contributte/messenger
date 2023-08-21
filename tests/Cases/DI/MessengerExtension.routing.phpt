@@ -9,9 +9,13 @@ use Nette\DI\Compiler;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBus;
 use Tester\Assert;
+use Tests\Mocks\Handler\InterfaceHandler;
 use Tests\Mocks\Handler\SameHandler1;
 use Tests\Mocks\Handler\SameHandler2;
 use Tests\Mocks\Handler\SimpleHandler;
+use Tests\Mocks\Handler\WildcardHandler;
+use Tests\Mocks\Message\MessageImpl1;
+use Tests\Mocks\Message\MessageImpl2;
 use Tests\Mocks\Message\SameMessage;
 use Tests\Mocks\Message\SimpleMessage;
 use Tests\Toolkit\Container;
@@ -162,4 +166,75 @@ Toolkit::test(function (): void {
 		LogicalException::class,
 		'Invalid transport "test" defined for "Tests\Mocks\Message\SimpleMessage". Available transports "memory1,memory2".'
 	);
+});
+
+// Routing via interface
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					transport:
+						sync:
+							dsn: sync://
+
+					routing:
+						Tests\Mocks\Message\MessageInterface: [sync]
+
+				services:
+					- Tests\Mocks\Handler\InterfaceHandler
+			NEON
+			));
+		})
+		->build();
+
+	/** @var BusRegistry $busRegistry */
+	$busRegistry = $container->getByType(BusRegistry::class);
+	$messageBus = $busRegistry->get('messageBus');
+
+	/** @var InterfaceHandler $handler */
+	$handler = $container->getByType(InterfaceHandler::class);
+
+	Assert::null($handler->message);
+
+	$messageBus->dispatch(new MessageImpl1('1'));
+	Assert::type(MessageImpl1::class, $handler->message);
+
+	$messageBus->dispatch(new MessageImpl2('2'));
+	Assert::type(MessageImpl2::class, $handler->message);
+});
+
+// Routing via wildcard
+Toolkit::test(function: function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					transport:
+						sync:
+							dsn: sync://
+
+					routing:
+						*: [sync]
+
+				services:
+					- Tests\Mocks\Handler\WildcardHandler
+			NEON
+			));
+		})
+		->build();
+
+	/** @var BusRegistry $busRegistry */
+	$busRegistry = $container->getByType(BusRegistry::class);
+	$messageBus = $busRegistry->get('messageBus');
+
+	/** @var WildcardHandler $handler */
+	$handler = $container->getByType(WildcardHandler::class);
+
+	Assert::null($handler->message);
+
+	$messageBus->dispatch(new MessageImpl1('1'));
+	Assert::type(MessageImpl1::class, $handler->message);
 });
