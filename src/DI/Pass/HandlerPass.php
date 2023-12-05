@@ -69,11 +69,11 @@ class HandlerPass extends AbstractPass
 				/** @var AsMessageHandler $attributeHandler */
 				$attributeHandler = isset($attributes[0]) ? $attributes[0]->getArguments() : new stdClass();
 				$attributeOptions = [
-					'bus' => $attributeHandler['bus'] ?? null,
-					'method' => $attributeHandler['method'] ?? null,
-					'priority' => $attributeHandler['priority'] ?? null,
-					'handles' => $attributeHandler['handles'] ?? null,
-					'from_transport' => $attributeHandler['fromTransport'] ?? null,
+					'bus' => $attributeHandler->bus ?? null,
+					'method' => $attributeHandler->method ?? null,
+					'priority' => $attributeHandler->priority ?? null,
+					'handles' => $attributeHandler->handles ?? null,
+					'from_transport' => $attributeHandler->fromTransport ?? null,
 				];
 
 				// Complete final options
