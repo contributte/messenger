@@ -55,11 +55,11 @@ final class Reflector
 			throw new LogicalException(sprintf('Handler must have "%s::%s()" method.', $class, $options['method']));
 		}
 
-		if ($rcMethod->getNumberOfParameters() !== 1 && !is_a($class, BatchHandlerInterface::class)) {
+		if ($rcMethod->getNumberOfParameters() !== 1 && !$rc->implementsInterface( BatchHandlerInterface::class)) {
 			throw new LogicalException(sprintf('Only one parameter is allowed in "%s::%s()."', $class, $options['method']));
 		}
 
-		if (is_a($class, BatchHandlerInterface::class)) {
+		if ($rc->implementsInterface( BatchHandlerInterface::class)) {
 			if ($rcMethod->getNumberOfParameters() !== 2) {
 				throw new LogicalException(sprintf('Exactly two parameters are required in "%s::%s()."', $class, $options['method']));
 			}
