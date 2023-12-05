@@ -9,6 +9,8 @@ use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionUnionType;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use Symfony\Component\Messenger\Handler\Acknowledger;
+use Symfony\Component\Messenger\Handler\BatchHandlerInterface;
 
 final class Reflector
 {
@@ -53,8 +55,25 @@ final class Reflector
 			throw new LogicalException(sprintf('Handler must have "%s::%s()" method.', $class, $options['method']));
 		}
 
-		if ($rcMethod->getNumberOfParameters() !== 1) {
+		if ($rcMethod->getNumberOfParameters() !== 1 && !is_a($class, BatchHandlerInterface::class)) {
 			throw new LogicalException(sprintf('Only one parameter is allowed in "%s::%s()."', $class, $options['method']));
+		}
+
+		if (is_a($class, BatchHandlerInterface::class)) {
+			if ($rcMethod->getNumberOfParameters() !== 2) {
+				throw new LogicalException(sprintf('Exactly two parameters are required in "%s::%s()."', $class, $options['method']));
+			}
+
+			/** @var ReflectionNamedType|ReflectionUnionType|ReflectionIntersectionType|null $type */
+			$type = $rcMethod->getParameters()[1]->getType();
+
+			if (!$type instanceof ReflectionNamedType) {
+				throw new LogicalException(sprintf('Second parameter type for "%s::%s()." must be "%s".', $class, $options['method'], Acknowledger::class));
+			}
+
+			if ($type->getName() !== Acknowledger::class) {
+				throw new LogicalException(sprintf('Second parameter type for "%s::%s()." must be "%s", "%s" given instead.', $class, $options['method'], Acknowledger::class, $type->getName()));
+			}
 		}
 
 		/** @var ReflectionNamedType|ReflectionUnionType|ReflectionIntersectionType|null $type */
