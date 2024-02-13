@@ -2,7 +2,6 @@
 
 namespace Contributte\Messenger\DI;
 
-use Contributte\DI\Extension\CompilerExtension;
 use Contributte\Messenger\DI\Pass\AbstractPass;
 use Contributte\Messenger\DI\Pass\BusPass;
 use Contributte\Messenger\DI\Pass\ConsolePass;
@@ -15,6 +14,7 @@ use Contributte\Messenger\DI\Pass\SerializerPass;
 use Contributte\Messenger\DI\Pass\TransportFactoryPass;
 use Contributte\Messenger\DI\Pass\TransportPass;
 use Nette\DI\Definitions\Statement;
+use Nette\DI\CompilerExtension;
 use Nette\PhpGenerator\ClassType;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
