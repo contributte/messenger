@@ -5,6 +5,7 @@ namespace Contributte\Messenger\DI\Pass;
 use Contributte\Messenger\Logger\MessengerLogger;
 use Nette\DI\Definitions\ServiceDefinition;
 use Nette\DI\Definitions\Statement;
+use Nette\DI\ServiceCreationException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\Console\Logger\ConsoleLogger;
@@ -34,13 +35,21 @@ class LoggerPass extends AbstractPass
 		$builder = $this->getContainerBuilder();
 		$config = $this->getConfig();
 
-		$logger = $builder->getByType(LoggerInterface::class);
+		$multiple = null;
+		try {
+			$logger = $builder->getByType(LoggerInterface::class, false);
+		} catch (ServiceCreationException $e) {
+			// multiple loggers
+			$multiple = $e;
+		}
 
 		// Register or resolve http logger
 		if ($config->logger->httpLogger !== null) {
 			$httpLogger = $builder->addDefinition($this->prefix('logger.httpLogger'))
 				->setFactory($config->logger->httpLogger)
 				->setAutowired(false);
+		} elseif ($multiple !== null) {
+			throw $e;
 		} elseif ($logger !== null) {
 			$httpLogger = $builder->addDefinition($this->prefix('logger.httpLogger'))
 				->setFactory('@' . $logger)
@@ -56,6 +65,8 @@ class LoggerPass extends AbstractPass
 			$consoleLogger = $builder->addDefinition($this->prefix('logger.consoleLogger'))
 				->setFactory($config->logger->consoleLogger)
 				->setAutowired(false);
+		} elseif ($multiple !== null) {
+			throw $e;
 		} elseif ($logger !== null) {
 			$consoleLogger = $builder->addDefinition($this->prefix('logger.consoleLogger'))
 				->setFactory('@' . $logger)
