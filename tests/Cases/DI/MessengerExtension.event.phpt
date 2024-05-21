@@ -7,6 +7,7 @@ use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Messenger\EventListener\AddErrorDetailsStampListener;
 use Symfony\Component\Messenger\EventListener\DispatchPcntlSignalListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
@@ -70,6 +71,7 @@ Toolkit::test(static function (): void {
 
 	$expectedRegisteredListeners = [
 		DispatchPcntlSignalListener::class,
+		AddErrorDetailsStampListener::class,
 		SendFailedMessageForRetryListener::class,
 		SendFailedMessageToFailureTransportListener::class,
 		StopWorkerOnSignalsListener::class,

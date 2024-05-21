@@ -8,6 +8,7 @@ use Nette\DI\Definitions\ServiceDefinition;
 use Nette\DI\Definitions\Statement;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Messenger\EventListener\AddErrorDetailsStampListener;
 use Symfony\Component\Messenger\EventListener\DispatchPcntlSignalListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
@@ -71,6 +72,11 @@ class EventPass extends AbstractPass
 		// PCNTL
 		$dispatcher->addSetup('addSubscriber', [
 			new Statement(DispatchPcntlSignalListener::class),
+		]);
+
+		// Error details
+		$dispatcher->addSetup('addSubscriber', [
+			new Statement(AddErrorDetailsStampListener::class),
 		]);
 
 		// Retry
