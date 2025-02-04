@@ -101,7 +101,7 @@ class EventPass extends AbstractPass
 			$dispatcher->addSetup('addSubscriber', [
 				new Statement(StopWorkerOnSignalsListener::class, [null, $this->prefix('@logger.logger')]),
 			]);
-		} else {
+		} elseif (class_exists(StopWorkerOnSigtermSignalListener::class)) {
 			$dispatcher->addSetup('addSubscriber', [
 				new Statement(StopWorkerOnSigtermSignalListener::class, [$this->prefix('@logger.logger')]), // @phpstan-ignore-line
 			]);
