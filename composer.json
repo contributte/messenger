@@ -1,6 +1,6 @@
 {
-    "name": "contributte/messenger",
-    "description": "Best Symfony Messenger for Nette framework",
+    "name": "luksh123/messenger",
+    "description": "Fork of best Symfony Messenger for Nette framework",
     "keywords": [
         "nette",
         "symfony",
@@ -11,7 +11,7 @@
     ],
     "type": "library",
     "license": "MIT",
-    "homepage": "https://github.com/contributte/messenger",
+    "homepage": "https://github.com/luksh123/messenger",
     "authors": [
         {
             "name": "Milan Felix Šulc",
@@ -25,17 +25,17 @@
         "psr/container": "^2.0.2",
         "psr/cache": "^2.0.0 || ^3.0.0",
         "psr/log": "^2.0.0 || ^3.0.0",
-        "symfony/messenger": "^6.0.19 || ^6.2.8",
-        "symfony/event-dispatcher": "^6.0.19 || ^6.2.8",
-        "symfony/console": "^6.0.19 || ^6.2.10",
-        "symfony/var-dumper": "^6.0.19 || ^6.2.10"
+        "symfony/messenger": "^6.0.19 || ^6.2.8 || ^7.1.6",
+        "symfony/event-dispatcher": "^6.0.19 || ^6.2.8 || ^7.1.6",
+        "symfony/console": "^6.0.19 || ^6.2.10 || ^7.1.6",
+        "symfony/var-dumper": "^6.0.19 || ^6.2.10 || ^7.1.6"
     },
     "require-dev": {
         "psr/container": "^2.0.2",
         "mockery/mockery": "^1.3.3",
-        "symfony/redis-messenger": "^6.0.19 || ^6.2.10",
-        "symfony/amqp-messenger": "^6.0.19 || ^6.2.8",
-        "symfony/doctrine-messenger": "^6.0.19 || ^6.2.10",
+        "symfony/redis-messenger": "^6.0.19 || ^6.2.10 || ^7.1.6",
+        "symfony/amqp-messenger": "^6.0.19 || ^6.2.8 || ^7.1.6",
+        "symfony/doctrine-messenger": "^6.0.19 || ^6.2.10 || ^7.1.6",
         "contributte/console": "^0.10.0",
         "contributte/event-dispatcher": "^0.9.0",
         "contributte/qa": "^0.4.0",
