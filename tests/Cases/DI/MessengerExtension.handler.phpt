@@ -288,7 +288,7 @@ Toolkit::test(function (): void {
 	);
 });
 
-// Error: multiple parameters handler
+// Error: message of a builtin type
 Toolkit::test(function (): void {
 	Assert::exception(
 		static function (): void {
@@ -305,8 +305,101 @@ Toolkit::test(function (): void {
 				->build();
 		},
 		LogicalException::class,
-		'Only one parameter is allowed in "Tests\Mocks\Handler\MultipleParametersHandler::__invoke()."'
+		'Type of the argument "$foo" of "Tests\Mocks\Handler\MultipleParametersHandler::__invoke()" must be a class, "string" given.'
 	);
+});
+
+// Handler with more parameters than the message, filled from HandlerArgumentsStamp
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+				services:
+					- Tests\Mocks\Handler\ArgumentsHandler
+			NEON
+			));
+		})
+		->build();
+
+	$descriptor = getHandlerDescriptor($container, new FooMessage('test'));
+	Assert::same(FooMessage::class, $descriptor->getOption('handles'));
+});
+
+// Handler of a union type handles each of its classes
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+				services:
+					- Tests\Mocks\Handler\UnionHandler
+			NEON
+			));
+		})
+		->build();
+
+	Assert::same(FooMessage::class, getHandlerDescriptor($container, new FooMessage('test'))->getOption('handles'));
+	Assert::same(BarMessage::class, getHandlerDescriptor($container, new BarMessage('test'))->getOption('handles'));
+});
+
+// Builtin types in a union are left out, as Symfony does
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+				services:
+					- Tests\Mocks\Handler\UnionWithBuiltinHandler
+			NEON
+			));
+		})
+		->build();
+
+	Assert::same(FooMessage::class, getHandlerDescriptor($container, new FooMessage('test'))->getOption('handles'));
+});
+
+// Error: union of builtin types only
+Toolkit::test(function (): void {
+	Assert::exception(
+		static function (): void {
+			Container::of()
+				->withDefaults()
+				->withCompiler(function (Compiler $compiler): void {
+					$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+				services:
+					- Tests\Mocks\Handler\BuiltinUnionHandler
+			NEON
+					));
+				})
+				->build();
+		},
+		LogicalException::class,
+		'Type of the argument "$message" of "Tests\Mocks\Handler\BuiltinUnionHandler::__invoke()" must be a class, "string|int" given.'
+	);
+});
+
+// Batch handler with arguments of its own after the Acknowledger
+Toolkit::test(function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+				services:
+					- Tests\Mocks\Handler\BatchArgumentsHandler
+			NEON
+			));
+		})
+		->build();
+
+	$descriptor = getHandlerDescriptor($container, new FooMessage('test'));
+	Assert::same(FooMessage::class, $descriptor->getOption('handles'));
+	Assert::notNull($descriptor->getBatchHandler());
 });
 
 function getHandlerDescriptor(NetteContainer $container, object $message, string $busName = 'messageBus'): HandlerDescriptor

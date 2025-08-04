@@ -60,17 +60,18 @@ class HandlerPass extends AbstractPass
 				$attributesOptions = $this->getAttributesOptions($serviceClass, $serviceName, $busName);
 
 				foreach (array_merge($tagsOptions, $attributesOptions) as $options) {
-					// Autodetect handled message
-					if (!isset($options['handles'])) {
-						$options['handles'] = Reflector::getMessageHandlerMessage($serviceClass, $options);
-					}
-
 					// If handler is not for current bus, then skip it
 					if ($options['bus'] !== $busName) {
 						continue;
 					}
 
-					$handlers[$options['handles']][$options['priority']][] = $options;
+					// Autodetect handled message
+					$handles = (array) ($options['handles'] ?? Reflector::getMessageHandlerMessage($serviceClass, $options));
+
+					foreach ($handles as $handle) {
+						$options['handles'] = $handle;
+						$handlers[$options['handles']][$options['priority']][] = $options;
+					}
 				}
 			}
 
