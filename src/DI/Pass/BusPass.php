@@ -36,9 +36,16 @@ class BusPass extends AbstractPass
 		$builder = $this->getContainerBuilder();
 		$config = $this->getConfig();
 
+		$defaultBusName = null;
+
 		// Iterate all buses
 		foreach ($config->bus as $name => $busConfig) {
 			$middlewares = [];
+
+			// Track the first bus as the default/fallback bus
+			if ($defaultBusName === null) {
+				$defaultBusName = $name;
+			}
 
 			$builder->addDefinition($this->prefix(sprintf('bus.%s.locator', $name)))
 				->setFactory(ContainerServiceHandlersLocator::class, [[]])
@@ -77,13 +84,14 @@ class BusPass extends AbstractPass
 					->addSetup('setLogger', [$this->prefix('@logger.logger')]);
 			}
 
-			// Register message bus
+			// Register message bus - individual buses are NOT autowired for MessageBusInterface
+			// The RoutableMessageBus will be the autowired MessageBusInterface
 			$builder->addDefinition($this->prefix(sprintf('bus.%s.bus', $name)))
 				->setFactory($busConfig->class ?? SymfonyMessageBus::class, [$middlewares])
-				->setAutowired($busConfig->autowired ?? count($builder->findByTag(MessengerExtension::BUS_TAG)) === 0)
+				->setAutowired(false)
 				->setTags([MessengerExtension::BUS_TAG => $name]);
 
-			// Register bus wrapper
+			// Register bus wrapper (these can still be autowired for their specific types)
 			if (isset($busConfig->wrapper) || isset(self::BUS_WRAPPERS[$name])) {
 				$builder->addDefinition($this->prefix(sprintf('bus.%s.wrapper', $name)))
 					->setFactory($busConfig->wrapper ?? self::BUS_WRAPPERS[$name], [$this->prefix(sprintf('@bus.%s.bus', $name))]);
@@ -95,10 +103,15 @@ class BusPass extends AbstractPass
 			->setFactory(NetteContainer::class)
 			->setAutowired(false);
 
-		// Register routable bus (for CLI)
+		// Register routable bus as the default autowired MessageBusInterface
+		// This ensures SyncTransport respects BusNameStamp when routing messages (Closes #16)
+		// The fallback bus is used when no BusNameStamp is present
 		$builder->addDefinition($this->prefix('bus.routable'))
-			->setFactory(RoutableMessageBus::class, [$this->prefix('@bus.container')]) // @TODO fallbackBus
-			->setAutowired(false);
+			->setFactory(RoutableMessageBus::class, [
+				$this->prefix('@bus.container'),
+				$defaultBusName !== null ? $this->prefix(sprintf('@bus.%s.bus', $defaultBusName)) : null,
+			])
+			->setAutowired(true);
 
 		// Register bus registry
 		$builder->addDefinition($this->prefix('busRegistry'))
