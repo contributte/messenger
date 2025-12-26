@@ -1,0 +1,52 @@
+# Test for issue #16: SyncTransport should respect BusNameStamp
+# https://github.com/contributte/messenger/issues/16
+#
+# When dispatching a message to eventBus (allowNoHandlers: true) via sync transport,
+# the SyncTransport should use eventBus middleware, not the default messageBus middleware.
+#
+# This test currently FAILS because SyncTransport ignores BusNameStamp and uses
+# the default bus middleware (messageBus with allowNoHandlers: false).
+
+input:
+    config:
+        extensions:
+            messenger: Contributte\Messenger\DI\MessengerExtension()
+
+        messenger:
+            bus:
+                messageBus:
+                    allowNoHandlers: false
+                eventBus:
+                    allowNoHandlers: true
+
+            transport:
+                sync:
+                    dsn: sync://
+
+            routing:
+                Tests\Mocks\Message\EventMessage: [sync]
+
+    dispatch:
+        bus: eventBus
+        message: Tests\Mocks\Message\EventMessage("test-event")
+
+output:
+    # Expected: Message should be sent and received without error
+    # because eventBus has allowNoHandlers: true
+    logger:
+        - level: info
+          message: 'Sending message {class} with {alias} sender using {sender}'
+          context:
+            class: Tests\Mocks\Message\EventMessage
+            alias: sync
+            sender: 'Symfony\Component\Messenger\Transport\Sync\SyncTransport'
+
+        - level: info
+          message: 'Received message {class}'
+          context:
+            class: Tests\Mocks\Message\EventMessage
+
+        - level: info
+          message: 'No handler for message {class}'
+          context:
+            class: Tests\Mocks\Message\EventMessage
