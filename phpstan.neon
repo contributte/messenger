@@ -22,24 +22,6 @@ parameters:
 			path: src/DI/Pass/HandlerPass.php
 
 		-
-			message: """
-				#^Fetching class constant class of deprecated class Symfony\\\\Component\\\\Messenger\\\\Handler\\\\MessageHandlerInterface\\:
-				since Symfony 6\\.2, use the \\{@see AsMessageHandler\\} attribute instead$#
-			"""
-			count: 1
-			path: src/DI/Pass/HandlerPass.php
-
-		-
-			message: "#^Class ReflectionIntersectionType not found\\.$#"
-			count: 1
-			path: src/DI/Utils/Reflector.php
-
-		-
 			message: "#^Dead catch \\- ReflectionException is never thrown in the try block\\.$#"
-			count: 1
-			path: src/DI/Utils/Reflector.php
-
-		-
-			message: "#^PHPDoc tag @var for variable \\$type contains unknown class ReflectionIntersectionType\\.$#"
 			count: 1
 			path: src/DI/Utils/Reflector.php

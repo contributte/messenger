@@ -12,11 +12,12 @@ use Symfony\Component\Messenger\EventListener\AddErrorDetailsStampListener;
 use Symfony\Component\Messenger\EventListener\DispatchPcntlSignalListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnSignalsListener;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnSigtermSignalListener;
 
 class EventPass extends AbstractPass
 {
+
+	private const STOP_WORKER_ON_SIGNALS_LISTENER = 'Symfony\\Component\\Messenger\\EventListener\\StopWorkerOnSignalsListener';
+	private const STOP_WORKER_ON_SIGTERM_SIGNAL_LISTENER = 'Symfony\\Component\\Messenger\\EventListener\\StopWorkerOnSigtermSignalListener';
 
 	/**
 	 * Register services
@@ -97,13 +98,13 @@ class EventPass extends AbstractPass
 		]);
 
 		// Stop on signal
-		if (class_exists(StopWorkerOnSignalsListener::class)) {
+		if (class_exists(self::STOP_WORKER_ON_SIGNALS_LISTENER)) {
 			$dispatcher->addSetup('addSubscriber', [
-				new Statement(StopWorkerOnSignalsListener::class, [null, $this->prefix('@logger.logger')]),
+				new Statement(self::STOP_WORKER_ON_SIGNALS_LISTENER, [null, $this->prefix('@logger.logger')]),
 			]);
-		} elseif (class_exists(StopWorkerOnSigtermSignalListener::class)) {
+		} elseif (class_exists(self::STOP_WORKER_ON_SIGTERM_SIGNAL_LISTENER)) {
 			$dispatcher->addSetup('addSubscriber', [
-				new Statement(StopWorkerOnSigtermSignalListener::class, [$this->prefix('@logger.logger')]), // @phpstan-ignore-line
+				new Statement(self::STOP_WORKER_ON_SIGTERM_SIGNAL_LISTENER, [$this->prefix('@logger.logger')]),
 			]);
 		}
 	}

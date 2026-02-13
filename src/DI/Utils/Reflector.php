@@ -6,14 +6,16 @@ use Contributte\Messenger\Exception\LogicalException;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionIntersectionType;
 use ReflectionNamedType;
+use ReflectionType;
 use ReflectionUnionType;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Handler\Acknowledger;
 use Symfony\Component\Messenger\Handler\BatchHandlerInterface;
 use function array_map;
 use function array_merge;
+use function class_exists;
+use function is_a;
 
 final class Reflector
 {
@@ -75,7 +77,7 @@ final class Reflector
 				throw new LogicalException(sprintf('Exactly two parameters are required in "%s::%s()."', $class, $options['method']));
 			}
 
-			/** @var ReflectionNamedType|ReflectionUnionType|ReflectionIntersectionType|null $type */
+			/** @var ReflectionType|null $type */
 			$type = $rcMethod->getParameters()[1]->getType();
 
 			if (!$type instanceof ReflectionNamedType) {
@@ -87,7 +89,7 @@ final class Reflector
 			}
 		}
 
-		/** @var ReflectionNamedType|ReflectionUnionType|ReflectionIntersectionType|null $type */
+		/** @var ReflectionType|null $type */
 		$type = $rcMethod->getParameters()[0]->getType();
 
 		if ($type === null) {
@@ -98,8 +100,12 @@ final class Reflector
 			throw new LogicalException(sprintf('Union parameter type for "%s::%s() is not supported."', $class, $options['method']));
 		}
 
-		if ($type instanceof ReflectionIntersectionType) {
+		if (class_exists('ReflectionIntersectionType') && is_a($type, 'ReflectionIntersectionType')) {
 			throw new LogicalException(sprintf('Intersection parameter type for "%s::%s() is not supported."', $class, $options['method']));
+		}
+
+		if (!$type instanceof ReflectionNamedType) {
+			throw new LogicalException(sprintf('Parameter type for "%s::%s() is not supported."', $class, $options['method']));
 		}
 
 		return $type->getName();
