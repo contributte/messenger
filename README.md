@@ -2,7 +2,7 @@
 
 <p align=center>
   <a href="https://github.com/contributte/messenger/actions"><img src="https://badgen.net/github/checks/contributte/messenger/master?cache=300"></a>
-  <a href="https://coveralls.io/r/contributte/messenger"> <img src="https://badgen.net/coveralls/c/github/contributte/messenger?cache=300"> </a>
+  <a href="https://codecov.io/gh/contributte/messenger"><img src="https://badgen.net/codecov/c/github/contributte/messenger"></a>
   <a href="https://packagist.org/packages/contributte/messenger"> <img src="https://badgen.net/packagist/dm/contributte/messenger"> </a>
   <a href="https://packagist.org/packages/contributte/messenger"> <img src="https://badgen.net/packagist/v/contributte/messenger"> </a>
 </p>
