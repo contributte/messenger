@@ -16,6 +16,7 @@ use Symfony\Component\Messenger\Middleware\FailedMessageProcessingMiddleware;
 use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 use Symfony\Component\Messenger\Middleware\SendMessageMiddleware;
 use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
+use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransportFactory;
 use Symfony\Component\Messenger\Transport\Sender\SendersLocator;
 use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
@@ -243,22 +244,22 @@ final class MessengerTest extends TestCase
 				'level' => 'info',
 				'message' => 'Sending message {class} with {alias} sender using {sender}',
 				'context' => [
-					'class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage',
+					'class' => DummyRetryFailureMessage::class,
 					'alias' => 'transport1',
-					'sender' => 'Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport',
+					'sender' => InMemoryTransport::class,
 				],
 			],
 			[
 				'level' => 'info',
 				'message' => 'Received message {class}',
-				'context' => ['class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage'],
+				'context' => ['class' => DummyRetryFailureMessage::class],
 			],
 			[
 				'level' => 'info',
 				'message' => 'Rejected message {class} will be sent to the failure transport {transport}.',
 				'context' => [
-					'class' => 'Tests\Mocks\Vendor\DummyRetryFailureMessage',
-					'transport' => 'Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport',
+					'class' => DummyRetryFailureMessage::class,
+					'transport' => InMemoryTransport::class,
 				],
 			],
 			[
@@ -349,40 +350,40 @@ final class MessengerTest extends TestCase
 				'level' => 'warning',
 				'message' => 'Error thrown while handling message {class}. Sending for retry #{retryCount} using {delay} ms delay. Error: "{error}"',
 				'context' => [
-					'class' => 'Tests\Mocks\Vendor\DummyFailureMessage',
+					'class' => DummyFailureMessage::class,
 					'message_id' => 1,
 					'retryCount' => 1,
 					'delay' => 1,
-					'error' => 'Handling "Tests\Mocks\Vendor\DummyFailureMessage" failed: Foo',
+					'error' => 'Handling "' . DummyFailureMessage::class . '" failed: Foo',
 				],
 			],
 			[
 				'level' => 'warning',
 				'message' => 'Error thrown while handling message {class}. Sending for retry #{retryCount} using {delay} ms delay. Error: "{error}"',
 				'context' => [
-					'class' => 'Tests\Mocks\Vendor\DummyFailureMessage',
+					'class' => DummyFailureMessage::class,
 					'message_id' => 2,
 					'retryCount' => 2,
 					'delay' => 2,
-					'error' => 'Handling "Tests\Mocks\Vendor\DummyFailureMessage" failed: Foo',
+					'error' => 'Handling "' . DummyFailureMessage::class . '" failed: Foo',
 				],
 			],
 			[
 				'level' => 'critical',
 				'message' => 'Error thrown while handling message {class}. Removing from transport after {retryCount} retries. Error: "{error}"',
 				'context' => [
-					'class' => 'Tests\Mocks\Vendor\DummyFailureMessage',
+					'class' => DummyFailureMessage::class,
 					'message_id' => 3,
 					'retryCount' => 2,
-					'error' => 'Handling "Tests\Mocks\Vendor\DummyFailureMessage" failed: Foo',
+					'error' => 'Handling "' . DummyFailureMessage::class . '" failed: Foo',
 				],
 			],
 			[
 				'level' => 'info',
 				'message' => 'Rejected message {class} will be sent to the failure transport {transport}.',
 				'context' => [
-					'class' => 'Tests\Mocks\Vendor\DummyFailureMessage',
-					'transport' => 'Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport',
+					'class' => DummyFailureMessage::class,
+					'transport' => InMemoryTransport::class,
 				],
 			],
 			[
