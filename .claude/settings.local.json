@@ -9,8 +9,10 @@
       "Bash(grep:*)",
       "Bash(cat:*)",
       "Bash(ls:*)",
+      "Bash(gh pr:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git fetch:*)"
     ]
   }
 }
