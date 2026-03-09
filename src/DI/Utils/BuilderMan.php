@@ -164,7 +164,7 @@ final class BuilderMan
 
 				foreach ($handlerDescriptors as $descriptor) {
 					$serviceDef = $builder->getDefinition($descriptor['service']);
-					$description = $serviceDef->getType();
+					$description = $serviceDef->getType() ?? $descriptor['service'];
 
 					$options = [];
 
