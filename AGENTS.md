@@ -22,37 +22,18 @@ Nette DI integration for Symfony Messenger. Library and DI extension, not an app
 
 ## Architecture
 
-### Compilation lifecycle
-
-The extension delegates work to passes through 3 lifecycle hooks: load -> beforeCompile -> afterCompile. Each pass handles exactly one concern. Pass order matters — later passes depend on services registered by earlier ones.
-
-Priority order: serializers and transports first, then routing and handlers, then events/logging/console, and finally buses and debug.
-
-When changing behavior, modify the responsible pass rather than the extension itself.
-
-### Configuration
-
-Config lives under `messenger:` key with sub-keys for debug, buses, serializers, transport factories, failure transports, transports, routing, and logging. The schema is defined in the extension class. When adding or changing config, update the schema first, then wire the option into the appropriate pass.
-
-Config values may be class names, `@service` references, or DI statements depending on the key. Routing and failure transports are validated against defined transport names at compile time.
-
-### Service naming and tags
-
-Extension constants define all tag names (transport factory, transport, failure transport, bus, handler, retry strategy). Service names follow patterns like `messenger.bus.<name>.*`, `messenger.transport.<name>`, `messenger.serializer.<name>`. Preserve these conventions — tests and utilities depend on them.
-
-### Handler discovery
-
-Handlers are registered via DI tag or `#[AsMessageHandler]` attribute. The handled message type is inferred from the handler method's first parameter type-hint (default method `__invoke`). Union/intersection types are rejected. Handlers are grouped per bus and sorted by priority.
-
-At runtime, the handler locator matches messages by concrete class, parent classes, implemented interfaces, namespace wildcards, and catch-all `*`.
-
-### Buses and middleware
-
-Each bus gets a handler locator, an optional default middleware stack, custom middlewares, and optionally a typed wrapper (message/command/query bus). Default middleware order: bus name stamp -> dispatch after current bus -> failed message processing -> [custom] -> send message -> handle message. Preserve this ordering.
-
-### Transports and events
-
-Built-in transport factories are registered only when the corresponding Symfony bridge class exists. Retry strategies default to multiplier unless a custom service is configured. The event pass wires retry and failure listeners. If an event dispatcher already exists in the container, it is reused.
+- Extension delegates to ordered passes via load -> beforeCompile -> afterCompile hooks, each handling one concern
+- Pass priority: serializers/transports -> routing/handlers -> events/logging/console -> buses/debug
+- Modify the responsible pass, not the extension
+- Config under `messenger:` key — schema defined in extension class, update schema first, then wire into the pass
+- Config values can be class names, `@service` references, or DI statements; routing/failure transports validated at compile time
+- Tag names defined as extension constants; service names follow `messenger.bus.<name>.*`, `messenger.transport.<name>`, `messenger.serializer.<name>` — preserve these
+- Handlers registered via DI tag or `#[AsMessageHandler]`, message type inferred from first parameter type-hint (`__invoke`)
+- Union/intersection types rejected; handlers grouped per bus, sorted by priority
+- Runtime handler matching: concrete class, parents, interfaces, namespace wildcards, `*`
+- Default middleware order: bus name stamp -> dispatch after current bus -> failed message processing -> [custom] -> send -> handle — preserve this order
+- Transport factories registered only when corresponding Symfony bridge class exists
+- Retry defaults to multiplier; event pass wires retry/failure listeners, reuses existing event dispatcher
 
 ## Code Style
 
