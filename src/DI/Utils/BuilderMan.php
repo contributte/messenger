@@ -142,6 +142,42 @@ final class BuilderMan
 	}
 
 	/**
+	 * @return array<class-string, array<int, string>>
+	 */
+	public function getAttributeRouting(): array
+	{
+		$builder = $this->pass->getContainerBuilder();
+		$routing = [];
+
+		foreach ($this->getHandlerServiceNames() as $serviceName) {
+			$definition = $builder->getDefinition($serviceName);
+			/** @var class-string|null $handlerClass */
+			$handlerClass = $definition->getType();
+
+			if ($handlerClass === null || !class_exists($handlerClass)) {
+				continue;
+			}
+
+			foreach (Reflector::getHandlerMessageClasses($handlerClass) as $messageClass) {
+				if (isset($routing[$messageClass]) || !class_exists($messageClass)) {
+					continue;
+				}
+
+				foreach (Reflector::getMessageRouting($messageClass) as $attribute) {
+					if ($attribute->transport === null) {
+						continue;
+					}
+
+					$transports = is_array($attribute->transport) ? $attribute->transport : [$attribute->transport];
+					$routing[$messageClass] = array_merge($routing[$messageClass] ?? [], $transports);
+				}
+			}
+		}
+
+		return $routing;
+	}
+
+	/**
 	 * @return array<string, array<string, list<array{string|null, array<string, mixed>}>>>
 	 */
 	public function getHandlerMapping(): array
