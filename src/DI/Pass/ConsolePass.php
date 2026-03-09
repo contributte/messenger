@@ -79,10 +79,25 @@ class ConsolePass extends AbstractPass
 	public function beforePassCompile(): void
 	{
 		$builder = $this->getContainerBuilder();
+		$builderMan = BuilderMan::of($this);
+
+		// Transport names
+		$transportNames = array_keys($builderMan->getTransports());
 
 		/** @var ServiceDefinition $setupTransportsCommandDef */
 		$setupTransportsCommandDef = $builder->getDefinition($this->prefix('console.setupTransportsCommand'));
-		$setupTransportsCommandDef->setArgument(1, array_keys(BuilderMan::of($this)->getTransports()));
+		$setupTransportsCommandDef->setArgument(1, $transportNames);
+
+		if (class_exists(StatsCommand::class)) {
+			/** @var ServiceDefinition $statsCommandDef */
+			$statsCommandDef = $builder->getDefinition($this->prefix('console.statsCommand'));
+			$statsCommandDef->setArgument(1, $transportNames);
+		}
+
+		// Handler mapping
+		/** @var ServiceDefinition $debugCommandDef */
+		$debugCommandDef = $builder->getDefinition($this->prefix('console.debugCommand'));
+		$debugCommandDef->setArgument(0, $builderMan->getHandlerMapping());
 	}
 
 }
