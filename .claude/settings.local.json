@@ -8,7 +8,9 @@
       "Bash(make:*:*)",
       "Bash(grep:*)",
       "Bash(cat:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
