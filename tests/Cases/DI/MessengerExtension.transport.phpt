@@ -128,6 +128,17 @@ Toolkit::test(function (): void {
 	Assert::count(1, $container->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG));
 });
 
+// Doctrine transport factory not registered without ConnectionRegistry
+Toolkit::test(static function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->build();
+
+	// 5 = sync + inMemory + amqp + redis + main TransportFactory (no doctrine without ConnectionRegistry)
+	Assert::count(5, $container->findByType(TransportFactoryInterface::class));
+	Assert::false($container->hasService('messenger.transportFactory.doctrine'));
+});
+
 // Dynamic parameters
 Toolkit::test(function (): void {
 	$container = Container::of()
