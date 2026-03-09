@@ -166,13 +166,10 @@ final class BuilderMan
 					$serviceDef = $builder->getDefinition($descriptor['service']);
 					$description = $serviceDef->getType();
 
-					if ($descriptor['method'] !== '__invoke') {
-						$description .= '::' . $descriptor['method'];
-					}
-
 					$options = [];
 
 					if ($descriptor['method'] !== '__invoke') {
+						$description .= '::' . $descriptor['method'];
 						$options['method'] = $descriptor['method'];
 					}
 
