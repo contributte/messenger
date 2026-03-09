@@ -58,10 +58,9 @@ make tests         # run all tests
 make phpstan       # static analysis
 make csf           # fix code style
 make qa            # phpstan + cs
-
-# Single test file
-vendor/bin/tester -s -p php --colors 1 -C tests/Cases/DI/MessengerExtension.handler.phpt
 ```
+
+**Always run `make cs phpstan tests` and fix all errors.**
 
 ### Conventions
 
