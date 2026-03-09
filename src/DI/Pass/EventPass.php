@@ -12,8 +12,6 @@ use Symfony\Component\Messenger\EventListener\AddErrorDetailsStampListener;
 use Symfony\Component\Messenger\EventListener\DispatchPcntlSignalListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnSignalsListener;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnSigtermSignalListener;
 
 class EventPass extends AbstractPass
 {
@@ -95,17 +93,6 @@ class EventPass extends AbstractPass
 				$this->prefix('@logger.logger'),
 			]),
 		]);
-
-		// Stop on signal
-		if (class_exists(StopWorkerOnSignalsListener::class)) {
-			$dispatcher->addSetup('addSubscriber', [
-				new Statement(StopWorkerOnSignalsListener::class, [null, $this->prefix('@logger.logger')]),
-			]);
-		} elseif (class_exists(StopWorkerOnSigtermSignalListener::class)) {
-			$dispatcher->addSetup('addSubscriber', [
-				new Statement(StopWorkerOnSigtermSignalListener::class, [$this->prefix('@logger.logger')]), // @phpstan-ignore-line
-			]);
-		}
 	}
 
 }

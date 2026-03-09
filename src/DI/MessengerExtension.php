@@ -13,8 +13,8 @@ use Contributte\Messenger\DI\Pass\RoutingPass;
 use Contributte\Messenger\DI\Pass\SerializerPass;
 use Contributte\Messenger\DI\Pass\TransportFactoryPass;
 use Contributte\Messenger\DI\Pass\TransportPass;
-use Nette\DI\Definitions\Statement;
 use Nette\DI\CompilerExtension;
+use Nette\DI\Definitions\Statement;
 use Nette\PhpGenerator\ClassType;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
@@ -61,9 +61,9 @@ class MessengerExtension extends CompilerExtension
 
 	public function getConfigSchema(): Schema
 	{
-		$expectClass = Expect::string()->required()->assert(fn ($input) => class_exists($input) || interface_exists($input));
+		$expectClass = Expect::string()->required()->assert(fn ($input) => is_string($input) && (class_exists($input) || interface_exists($input)));
 		$expectService = Expect::anyOf(
-			Expect::string()->required()->assert(fn ($input) => str_starts_with($input, '@') || class_exists($input) || interface_exists($input)),
+			Expect::string()->required()->assert(fn ($input) => is_string($input) && (str_starts_with($input, '@') || class_exists($input) || interface_exists($input))),
 			Expect::type(Statement::class)->required(),
 		);
 		$expectLoosyService = Expect::anyOf(
@@ -82,7 +82,7 @@ class MessengerExtension extends CompilerExtension
 					'allowNoHandlers' => Expect::bool(false),
 					'allowNoSenders' => Expect::bool(true),
 					'autowired' => Expect::bool(),
-					'class' => (clone $expectClass)->required(false)->assert(fn ($input) => is_subclass_of($input, MessageBusInterface::class), 'Specified bus class must implements "MessageBusInterface"'),
+					'class' => (clone $expectClass)->required(false)->assert(fn ($input) => is_string($input) && is_subclass_of($input, MessageBusInterface::class), 'Specified bus class must implements "MessageBusInterface"'),
 					'wrapper' => (clone $expectClass)->required(false),
 				]),
 				Expect::string()->required(),
