@@ -2,12 +2,13 @@ name: "Coverage"
 
 on:
   pull_request:
+  workflow_dispatch:
 
   push:
     branches: ["*"]
 
   schedule:
-    - cron: "0 8 * * 1"
+    - cron: "0 9 * * 1"
 
 jobs:
   coverage:
