@@ -281,7 +281,7 @@ Toolkit::test(function (): void {
 			NEON
 					));
 				 })
-				->build();
+				 ->build();
 		},
 		LogicalException::class,
 		'Handler must have "Tests\Mocks\Handler\NoMethodHandler::__invoke()" method.'
@@ -313,8 +313,10 @@ function getHandlerDescriptor(NetteContainer $container, object $message, string
 {
 	/** @var HandlersLocatorInterface $handlerLocator */
 	$handlerLocator = $container->getByName(sprintf('messenger.bus.%s.locator', $busName));
-	/** @var HandlerDescriptor $handlerDescriptor */
-	$handlerDescriptor = $handlerLocator->getHandlers(new Envelope($message))[0] ?? null;
+
+	/** @var HandlerDescriptor[] $handlerDescriptors */
+	$handlerDescriptors = iterator_to_array($handlerLocator->getHandlers(new Envelope($message)));
+	$handlerDescriptor = $handlerDescriptors[0] ?? null;
 	Assert::notNull($handlerDescriptor);
 
 	return $handlerDescriptor;

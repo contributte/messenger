@@ -87,7 +87,7 @@ Toolkit::test(function (): void {
 				NEON
 			));
 			})
-		->build(),
+			->build(),
 		LogicalException::class,
 		'Invalid failure transport "transport3" defined for "transport2" transport. Available transports "transport1, transport2".',
 	);

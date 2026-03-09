@@ -350,6 +350,7 @@ final class MessengerTest extends TestCase
 				'message' => 'Error thrown while handling message {class}. Sending for retry #{retryCount} using {delay} ms delay. Error: "{error}"',
 				'context' => [
 					'class' => 'Tests\Mocks\Vendor\DummyFailureMessage',
+					'message_id' => 1,
 					'retryCount' => 1,
 					'delay' => 1,
 					'error' => 'Handling "Tests\Mocks\Vendor\DummyFailureMessage" failed: Foo',
@@ -360,6 +361,7 @@ final class MessengerTest extends TestCase
 				'message' => 'Error thrown while handling message {class}. Sending for retry #{retryCount} using {delay} ms delay. Error: "{error}"',
 				'context' => [
 					'class' => 'Tests\Mocks\Vendor\DummyFailureMessage',
+					'message_id' => 2,
 					'retryCount' => 2,
 					'delay' => 2,
 					'error' => 'Handling "Tests\Mocks\Vendor\DummyFailureMessage" failed: Foo',
@@ -370,6 +372,7 @@ final class MessengerTest extends TestCase
 				'message' => 'Error thrown while handling message {class}. Removing from transport after {retryCount} retries. Error: "{error}"',
 				'context' => [
 					'class' => 'Tests\Mocks\Vendor\DummyFailureMessage',
+					'message_id' => 3,
 					'retryCount' => 2,
 					'error' => 'Handling "Tests\Mocks\Vendor\DummyFailureMessage" failed: Foo',
 				],
