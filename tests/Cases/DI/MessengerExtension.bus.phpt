@@ -8,6 +8,7 @@ use Nette\DI\InvalidConfigurationException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
+use Symfony\Component\Messenger\RoutableMessageBus;
 use Tester\Assert;
 use Tests\Mocks\Bus\BusWrapper;
 use Tests\Toolkit\Container;
@@ -165,4 +166,44 @@ Toolkit::test(function (): void {
 		->build();
 
 	Assert::type(BusWrapper::class, $container->getByType(BusWrapper::class));
+});
+
+// RoutableMessageBus without fallback bus (default)
+Toolkit::test(static function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->build();
+
+	/** @var RoutableMessageBus $routableBus */
+	$routableBus = $container->getService('messenger.bus.routable');
+	Assert::type(RoutableMessageBus::class, $routableBus);
+
+	$rc = new \ReflectionClass($routableBus);
+	$prop = $rc->getProperty('fallbackBus');
+	Assert::null($prop->getValue($routableBus));
+});
+
+// RoutableMessageBus with explicit fallback bus
+Toolkit::test(static function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(static function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					fallbackBus: messageBus
+					bus:
+						messageBus:
+						commandBus:
+							allowNoHandlers: true
+			NEON
+			));
+		})
+		->build();
+
+	/** @var RoutableMessageBus $routableBus */
+	$routableBus = $container->getService('messenger.bus.routable');
+
+	$rc = new \ReflectionClass($routableBus);
+	$prop = $rc->getProperty('fallbackBus');
+	Assert::type(MessageBus::class, $prop->getValue($routableBus));
 });
