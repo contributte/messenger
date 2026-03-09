@@ -33,15 +33,13 @@ class ConsolePass extends AbstractPass
 			]);
 
 		$builder->addDefinition($this->extension->prefix('console.debugCommand'))
-			->setFactory(DebugCommand::class, [[]]); // @TODO mapping
+			->setFactory(DebugCommand::class, [[]]);
 
 		$builder->addDefinition($this->extension->prefix('console.setupTransportsCommand'))
-			->setFactory(SetupTransportsCommand::class, [$this->prefix('@transport.container'), []]); // @TODO transportNames
+			->setFactory(SetupTransportsCommand::class, [$this->prefix('@transport.container'), []]);
 
-		if (class_exists(StatsCommand::class)) {
-			$builder->addDefinition($this->extension->prefix('console.statsCommand'))
-				->setFactory(StatsCommand::class, [$this->prefix('@transport.container'), []]); // @TODO transportNames
-		}
+		$builder->addDefinition($this->extension->prefix('console.statsCommand'))
+			->setFactory(StatsCommand::class, [$this->prefix('@transport.container'), []]);
 
 		$builder->addDefinition($this->extension->prefix('console.failedMessageRemoveCommand'))
 			->setFactory(FailedMessagesRemoveCommand::class, [
@@ -88,11 +86,9 @@ class ConsolePass extends AbstractPass
 		$setupTransportsCommandDef = $builder->getDefinition($this->prefix('console.setupTransportsCommand'));
 		$setupTransportsCommandDef->setArgument(1, $transportNames);
 
-		if (class_exists(StatsCommand::class)) {
-			/** @var ServiceDefinition $statsCommandDef */
-			$statsCommandDef = $builder->getDefinition($this->prefix('console.statsCommand'));
-			$statsCommandDef->setArgument(1, $transportNames);
-		}
+		/** @var ServiceDefinition $statsCommandDef */
+		$statsCommandDef = $builder->getDefinition($this->prefix('console.statsCommand'));
+		$statsCommandDef->setArgument(1, $transportNames);
 
 		// Handler mapping
 		/** @var ServiceDefinition $debugCommandDef */

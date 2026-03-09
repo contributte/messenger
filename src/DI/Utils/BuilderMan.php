@@ -142,7 +142,7 @@ final class BuilderMan
 	}
 
 	/**
-	 * @return array<string, array<string, list<string>>>
+	 * @return array<string, array<string, list<array{string|null, array<string, mixed>}>>>
 	 */
 	public function getHandlerMapping(): array
 	{
@@ -154,7 +154,7 @@ final class BuilderMan
 			/** @var ServiceDefinition $locator */
 			$locator = $builder->getDefinition($this->pass->prefix(sprintf('bus.%s.locator', $busName)));
 
-			/** @var array<string, list<array{service: string, method: string}>> $handlers */
+			/** @var array<string, list<array{service: string, method: string, from_transport?: string|null, alias?: string|null}>> $handlers */
 			$handlers = $locator->getFactory()->arguments[0] ?? [];
 
 			$busMapping = [];
@@ -163,13 +163,28 @@ final class BuilderMan
 				$descriptions = [];
 
 				foreach ($handlerDescriptors as $descriptor) {
-					$description = $descriptor['service'];
+					$serviceDef = $builder->getDefinition($descriptor['service']);
+					$description = $serviceDef->getType();
 
 					if ($descriptor['method'] !== '__invoke') {
 						$description .= '::' . $descriptor['method'];
 					}
 
-					$descriptions[] = $description;
+					$options = [];
+
+					if ($descriptor['method'] !== '__invoke') {
+						$options['method'] = $descriptor['method'];
+					}
+
+					if (isset($descriptor['from_transport'])) {
+						$options['from_transport'] = $descriptor['from_transport'];
+					}
+
+					if (isset($descriptor['alias'])) {
+						$options['alias'] = $descriptor['alias'];
+					}
+
+					$descriptions[] = [$description, $options];
 				}
 
 				$busMapping[$messageClass] = $descriptions;
