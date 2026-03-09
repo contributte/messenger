@@ -96,8 +96,12 @@ class BusPass extends AbstractPass
 			->setAutowired(false);
 
 		// Register routable bus (for CLI)
+		$fallbackBusName = $config->fallbackBus ?? null;
 		$builder->addDefinition($this->prefix('bus.routable'))
-			->setFactory(RoutableMessageBus::class, [$this->prefix('@bus.container')]) // @TODO fallbackBus
+			->setFactory(RoutableMessageBus::class, [
+				$this->prefix('@bus.container'),
+				$fallbackBusName !== null ? $this->prefix(sprintf('@bus.%s.bus', $fallbackBusName)) : null,
+			])
 			->setAutowired(false);
 
 		// Register bus registry
