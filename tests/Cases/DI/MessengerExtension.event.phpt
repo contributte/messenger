@@ -11,7 +11,6 @@ use Symfony\Component\Messenger\EventListener\AddErrorDetailsStampListener;
 use Symfony\Component\Messenger\EventListener\DispatchPcntlSignalListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnSignalsListener;
 use Tester\Assert;
 use Tests\Toolkit\Container;
 
@@ -74,7 +73,6 @@ Toolkit::test(static function (): void {
 		AddErrorDetailsStampListener::class,
 		SendFailedMessageForRetryListener::class,
 		SendFailedMessageToFailureTransportListener::class,
-		StopWorkerOnSignalsListener::class,
 	];
 
 	foreach ($expectedRegisteredListeners as $expectedRegisteredListener) {
