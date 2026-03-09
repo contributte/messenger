@@ -105,7 +105,7 @@ Toolkit::test(static function (): void {
 });
 
 // DebugCommand executes successfully and shows handler mapping
-Toolkit::test(function: static function (): void {
+Toolkit::test(static function (): void {
 	$container = Container::of()
 		->withDefaults()
 		->withCompiler(static function (Compiler $compiler): void {

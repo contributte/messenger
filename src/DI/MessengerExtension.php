@@ -92,7 +92,6 @@ class MessengerExtension extends CompilerExtension
 					'middlewares' => Expect::arrayOf((clone $expectService)),
 					'allowNoHandlers' => Expect::bool(false),
 					'allowNoSenders' => Expect::bool(true),
-
 					'class' => (clone $expectClass)->required(false)->assert(fn ($input) => is_string($input) && is_subclass_of($input, MessageBusInterface::class), 'Specified bus class must implements "MessageBusInterface"'),
 					'wrapper' => (clone $expectClass)->required(false),
 				]),
@@ -102,7 +101,6 @@ class MessengerExtension extends CompilerExtension
 					'defaultMiddlewares' => true,
 					'middlewares' => [],
 					'class' => null,
-
 					'allowNoHandlers' => false,
 					'allowNoSenders' => true,
 				],
