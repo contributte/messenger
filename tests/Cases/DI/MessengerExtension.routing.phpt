@@ -8,14 +8,17 @@ use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
 use Symfony\Component\Messenger\Exception\NoHandlerForMessageException;
 use Symfony\Component\Messenger\MessageBus;
+use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 use Tester\Assert;
 use Tests\Mocks\Handler\InterfaceHandler;
+use Tests\Mocks\Handler\RoutedMessageHandler;
 use Tests\Mocks\Handler\SameHandler1;
 use Tests\Mocks\Handler\SameHandler2;
 use Tests\Mocks\Handler\SimpleHandler;
 use Tests\Mocks\Handler\WildcardHandler;
 use Tests\Mocks\Message\MessageImpl1;
 use Tests\Mocks\Message\MessageImpl2;
+use Tests\Mocks\Message\RoutedMessage;
 use Tests\Mocks\Message\SameMessage;
 use Tests\Mocks\Message\SimpleMessage;
 use Tests\Toolkit\Container;
@@ -262,4 +265,99 @@ Toolkit::test(function: function (): void {
 
 	$messageBus->dispatch(new MessageImpl1('1'));
 	Assert::type(MessageImpl1::class, $handler->message);
+});
+
+// Routing via #[AsMessage] attribute
+Toolkit::test(static function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(static function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					transport:
+						memory:
+							dsn: in-memory://
+
+				services:
+					- Tests\Mocks\Handler\RoutedMessageHandler
+			NEON
+			));
+		})
+		->build();
+
+	/** @var BusRegistry $busRegistry */
+	$busRegistry = $container->getByType(BusRegistry::class);
+	$messageBus = $busRegistry->get('messageBus');
+
+	$messageBus->dispatch(new RoutedMessage('routed'));
+
+	// Message was routed to async transport (not handled synchronously)
+	/** @var InMemoryTransport $transport */
+	$transport = $container->getService('messenger.transport.memory');
+	$sent = $transport->getSent();
+	Assert::count(1, $sent);
+	Assert::type(RoutedMessage::class, $sent[0]->getMessage());
+});
+
+// NEON routing takes precedence over #[AsMessage] attribute
+Toolkit::test(static function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(static function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					transport:
+						memory:
+							dsn: in-memory://
+						sync:
+							dsn: sync://
+
+					routing:
+						Tests\Mocks\Message\RoutedMessage: [sync]
+
+				services:
+					- Tests\Mocks\Handler\RoutedMessageHandler
+			NEON
+			));
+		})
+		->build();
+
+	/** @var BusRegistry $busRegistry */
+	$busRegistry = $container->getByType(BusRegistry::class);
+	$messageBus = $busRegistry->get('messageBus');
+
+	/** @var RoutedMessageHandler $handler */
+	$handler = $container->getByType(RoutedMessageHandler::class);
+
+	// NEON routes to sync, so handler is called synchronously (overriding #[AsMessage(transport: 'memory')])
+	$messageBus->dispatch(new RoutedMessage('overridden'));
+	Assert::type(RoutedMessage::class, $handler->message);
+	Assert::equal('overridden', $handler->message->text);
+
+	// Memory transport should be empty (NEON routing to sync took precedence)
+	/** @var InMemoryTransport $transport */
+	$transport = $container->getService('messenger.transport.memory');
+	Assert::count(0, $transport->getSent());
+});
+
+// #[AsMessage] with invalid transport fails validation
+Toolkit::test(static function (): void {
+	Assert::exception(
+		static function (): void {
+			Container::of()
+				->withDefaults()
+				->withCompiler(static function (Compiler $compiler): void {
+					$compiler->addConfig(Helpers::neon(<<<'NEON'
+						messenger:
+
+						services:
+							- Tests\Mocks\Handler\RoutedMessageHandler
+					NEON
+					));
+				})
+				->build();
+		},
+		LogicalException::class,
+		'Invalid transport "memory"%a%'
+	);
 });

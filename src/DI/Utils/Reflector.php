@@ -9,6 +9,7 @@ use ReflectionException;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionUnionType;
+use Symfony\Component\Messenger\Attribute\AsMessage;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Handler\Acknowledger;
 use Symfony\Component\Messenger\Handler\BatchHandlerInterface;
@@ -103,6 +104,54 @@ final class Reflector
 		}
 
 		return $type->getName();
+	}
+
+	/**
+	 * @param class-string $handlerClass
+	 * @return list<string>
+	 */
+	public static function getHandlerMessageClasses(string $handlerClass): array
+	{
+		$messages = [];
+
+		$handlers = self::getMessageHandlers($handlerClass);
+
+		foreach ($handlers as $handler) {
+			$method = $handler->method ?? '__invoke';
+
+			try {
+				$messages[] = self::getMessageHandlerMessage($handlerClass, ['method' => $method]);
+			} catch (\Throwable) {
+				// Skip handlers that can't be resolved
+			}
+		}
+
+		// Also try default __invoke method if not already covered
+		try {
+			$message = self::getMessageHandlerMessage($handlerClass, ['method' => '__invoke']);
+
+			if (!in_array($message, $messages, true)) {
+				$messages[] = $message;
+			}
+		} catch (\Throwable) {
+			// Skip
+		}
+
+		return $messages;
+	}
+
+	/**
+	 * @param class-string $class
+	 * @return list<AsMessage>
+	 */
+	public static function getMessageRouting(string $class): array
+	{
+		$rc = new ReflectionClass($class);
+
+		return array_map(
+			static fn (ReflectionAttribute $attribute): AsMessage => $attribute->newInstance(),
+			$rc->getAttributes(AsMessage::class),
+		);
 	}
 
 }
