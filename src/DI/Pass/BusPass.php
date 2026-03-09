@@ -77,10 +77,10 @@ class BusPass extends AbstractPass
 					->addSetup('setLogger', [$this->prefix('@logger.logger')]);
 			}
 
-			// Register message bus
+			// Register message bus (not autowired — RoutableMessageBus is the autowired MessageBusInterface)
 			$builder->addDefinition($this->prefix(sprintf('bus.%s.bus', $name)))
 				->setFactory($busConfig->class ?? SymfonyMessageBus::class, [$middlewares])
-				->setAutowired($busConfig->autowired ?? count($builder->findByTag(MessengerExtension::BUS_TAG)) === 0)
+				->setAutowired(false)
 				->setTags([MessengerExtension::BUS_TAG => $name]);
 
 			// Register bus wrapper
@@ -95,14 +95,16 @@ class BusPass extends AbstractPass
 			->setFactory(NetteContainer::class)
 			->setAutowired(false);
 
-		// Register routable bus (for CLI)
+		// Register routable bus — autowired as MessageBusInterface so that
+		// SyncTransport (and any other autowired consumer) routes through
+		// the correct bus based on BusNameStamp.
 		$fallbackBusName = $config->fallbackBus ?? null;
 		$builder->addDefinition($this->prefix('bus.routable'))
 			->setFactory(RoutableMessageBus::class, [
 				$this->prefix('@bus.container'),
 				$fallbackBusName !== null ? $this->prefix(sprintf('@bus.%s.bus', $fallbackBusName)) : null,
 			])
-			->setAutowired(false);
+			->setAutowired(true);
 
 		// Register bus registry
 		$builder->addDefinition($this->prefix('busRegistry'))
