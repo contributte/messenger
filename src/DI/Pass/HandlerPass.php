@@ -9,7 +9,6 @@ use Nette\DI\Definitions\Definition;
 use Nette\DI\Definitions\ServiceDefinition;
 use ReflectionClass;
 use ReflectionException;
-use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 use function array_merge;
 use function is_numeric;
 use function is_string;
@@ -97,7 +96,6 @@ class HandlerPass extends AbstractPass
 		// Find all handlers
 		$serviceHandlers = [];
 		$serviceHandlers = array_merge($serviceHandlers, array_keys($builder->findByTag(MessengerExtension::HANDLER_TAG)));
-		$serviceHandlers = array_merge($serviceHandlers, array_keys($builder->findByType(MessageHandlerInterface::class)));
 
 		foreach ($builder->getDefinitions() as $definition) {
 			/** @var class-string $class */

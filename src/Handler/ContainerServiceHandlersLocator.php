@@ -26,7 +26,7 @@ class ContainerServiceHandlersLocator implements HandlersLocatorInterface
 	}
 
 	/**
-	 * @return array<int, HandlerDescriptor>
+	 * @return iterable<int, HandlerDescriptor>
 	 */
 	public function getHandlers(Envelope $envelope): iterable
 	{

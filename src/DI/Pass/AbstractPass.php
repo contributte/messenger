@@ -51,7 +51,7 @@ abstract class AbstractPass
 		return $this->extension->getContainerBuilder();
 	}
 
-	public function getConfig(): stdclass
+	public function getConfig(): stdClass
 	{
 		/** @var stdclass $ret */
 		$ret = (object) $this->extension->getConfig();
