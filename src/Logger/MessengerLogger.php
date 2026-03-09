@@ -4,7 +4,11 @@ namespace Contributte\Messenger\Logger;
 
 use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Stringable;
+use Symfony\Component\Console\Logger\ConsoleLogger;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class MessengerLogger extends AbstractLogger
 {
@@ -13,10 +17,18 @@ class MessengerLogger extends AbstractLogger
 
 	private LoggerInterface $consoleLogger;
 
-	public function __construct(LoggerInterface $logger, LoggerInterface $consoleLogger)
+	public function __construct(
+		?LoggerInterface $httpLogger = null,
+		?LoggerInterface $consoleLogger = null
+	)
 	{
-		$this->httpLogger = $logger;
-		$this->consoleLogger = $consoleLogger;
+		$this->httpLogger = $httpLogger ?? new NullLogger();
+
+		$this->consoleLogger = $consoleLogger ?? new ConsoleLogger(
+			new ConsoleOutput(
+				OutputInterface::VERBOSITY_VERY_VERBOSE
+			)
+		);
 	}
 
 	/**

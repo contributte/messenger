@@ -18,10 +18,8 @@ Toolkit::test(function (): void {
 		->withDefaults()
 		->build();
 
-	Assert::count(3, $container->findByType(LoggerInterface::class));
+	Assert::count(1, $container->findByType(LoggerInterface::class));
 	Assert::true($container->hasService('messenger.logger.logger'));
-	Assert::true($container->hasService('messenger.logger.consoleLogger'));
-	Assert::true($container->hasService('messenger.logger.httpLogger'));
 });
 
 // Provided event dispatcher
@@ -37,13 +35,12 @@ Toolkit::test(static function (): void {
 		})
 		->build();
 
-	Assert::count(4, $container->findByType(LoggerInterface::class));
-	Assert::true($container->hasService('messenger.logger.logger'));
-	Assert::true($container->hasService('messenger.logger.consoleLogger'));
-	Assert::true($container->hasService('messenger.logger.httpLogger'));
+	Assert::count(2, $container->findByType(LoggerInterface::class));
 
+	Assert::true($container->hasService('messenger.logger.logger'));
 	Assert::false($container->isCreated('mylogger'));
 	Assert::false($container->isCreated('messenger.logger.logger'));
+
 	Assert::type(BufferLogger::class, $container->getByType(LoggerInterface::class));
 	Assert::true($container->isCreated('mylogger'));
 	Assert::false($container->isCreated('messenger.logger.logger'));
