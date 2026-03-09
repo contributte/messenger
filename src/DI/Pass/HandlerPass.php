@@ -3,6 +3,7 @@
 namespace Contributte\Messenger\DI\Pass;
 
 use Contributte\Messenger\DI\MessengerExtension;
+use Contributte\Messenger\DI\Utils\BuilderMan;
 use Contributte\Messenger\DI\Utils\Reflector;
 use Contributte\Messenger\Exception\LogicalException;
 use Nette\DI\Definitions\Definition;
@@ -40,7 +41,7 @@ class HandlerPass extends AbstractPass
 			$handlers = [];
 
 			// Collect all message handlers from DIC
-			$serviceHandlers = $this->getMessageHandlers();
+			$serviceHandlers = BuilderMan::of($this)->getHandlerServiceNames();
 
 			// Iterate all found handlers
 			foreach ($serviceHandlers as $serviceName) {
@@ -84,43 +85,6 @@ class HandlerPass extends AbstractPass
 			$busHandlerLocator = $builder->getDefinition($this->prefix(sprintf('bus.%s.locator', $busName)));
 			$busHandlerLocator->setArgument(0, $handlers);
 		}
-	}
-
-	/**
-	 * @return array<int, string>
-	 */
-	private function getMessageHandlers(): array
-	{
-		$builder = $this->getContainerBuilder();
-
-		// Find all handlers
-		$serviceHandlers = [];
-		$serviceHandlers = array_merge($serviceHandlers, array_keys($builder->findByTag(MessengerExtension::HANDLER_TAG)));
-
-		foreach ($builder->getDefinitions() as $definition) {
-			/** @var class-string $class */
-			$class = $definition->getType();
-
-			// Skip definitions without type
-			if ($definition->getType() === null) {
-				continue;
-			}
-
-			// Skip definitions without name
-			if ($definition->getName() === null) {
-				continue;
-			}
-
-			// Skip services without attribute
-			if (Reflector::getMessageHandlers($class) === []) {
-				continue;
-			}
-
-			$serviceHandlers[] = $definition->getName();
-		}
-
-		// Clean duplicates
-		return array_unique($serviceHandlers);
 	}
 
 	/**

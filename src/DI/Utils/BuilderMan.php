@@ -6,6 +6,7 @@ use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Messenger\DI\Pass\AbstractPass;
 use Contributte\Messenger\Exception\LogicalException;
 use Nette\DI\Definitions\Definition;
+use Nette\DI\Definitions\ServiceDefinition;
 use Nette\DI\Definitions\Statement;
 
 final class BuilderMan
@@ -107,6 +108,77 @@ final class BuilderMan
 		}
 
 		return $transportsMapping;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getHandlerServiceNames(): array
+	{
+		$builder = $this->pass->getContainerBuilder();
+
+		$serviceHandlers = array_keys($builder->findByTag(MessengerExtension::HANDLER_TAG));
+
+		foreach ($builder->getDefinitions() as $definition) {
+			/** @var class-string|null $class */
+			$class = $definition->getType();
+
+			if ($class === null || !class_exists($class)) {
+				continue;
+			}
+
+			$name = $definition->getName();
+
+			if ($name === null) {
+				continue;
+			}
+
+			if (Reflector::getMessageHandlers($class) !== []) {
+				$serviceHandlers[] = $name;
+			}
+		}
+
+		return array_values(array_unique($serviceHandlers));
+	}
+
+	/**
+	 * @return array<string, array<string, list<string>>>
+	 */
+	public function getHandlerMapping(): array
+	{
+		$builder = $this->pass->getContainerBuilder();
+		$config = $this->pass->getConfig();
+		$mapping = [];
+
+		foreach ($config->bus as $busName => $busConfig) {
+			/** @var ServiceDefinition $locator */
+			$locator = $builder->getDefinition($this->pass->prefix(sprintf('bus.%s.locator', $busName)));
+
+			/** @var array<string, list<array{service: string, method: string}>> $handlers */
+			$handlers = $locator->getFactory()->arguments[0] ?? [];
+
+			$busMapping = [];
+
+			foreach ($handlers as $messageClass => $handlerDescriptors) {
+				$descriptions = [];
+
+				foreach ($handlerDescriptors as $descriptor) {
+					$description = $descriptor['service'];
+
+					if ($descriptor['method'] !== '__invoke') {
+						$description .= '::' . $descriptor['method'];
+					}
+
+					$descriptions[] = $description;
+				}
+
+				$busMapping[$messageClass] = $descriptions;
+			}
+
+			$mapping[$busName] = $busMapping;
+		}
+
+		return $mapping;
 	}
 
 	public function getSerializer(string|Statement|null $serializer): Statement|string
