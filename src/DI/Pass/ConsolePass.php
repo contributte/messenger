@@ -67,10 +67,9 @@ class ConsolePass extends AbstractPass
 				$this->prefix('@serializer.default'),
 			]);
 
-		if (PHP_VERSION === 'fake') {
-			// TODO
+		if ($config->cache !== null) {
 			$builder->addDefinition($this->extension->prefix('console.stopWorkersCommand'))
-				->setFactory(StopWorkersCommand::class);
+				->setFactory(StopWorkersCommand::class, [$config->cache]);
 		}
 	}
 

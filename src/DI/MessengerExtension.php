@@ -75,6 +75,17 @@ class MessengerExtension extends CompilerExtension
 			'debug' => Expect::structure([
 				'panel' => Expect::bool(false),
 			]),
+			'worker' => Expect::structure([
+				'memoryLimit' => Expect::int()->nullable(),
+				'timeLimit' => Expect::int()->nullable(),
+				'messageLimit' => Expect::int()->nullable(),
+				'failureLimit' => Expect::int()->nullable(),
+			]),
+			'cache' => Expect::anyOf(
+				Expect::string()->required(),
+				Expect::type(Statement::class)->required(),
+			)->nullable(),
+			'fallbackBus' => Expect::string()->nullable(),
 			'bus' => Expect::arrayOf(
 				Expect::structure([
 					'defaultMiddlewares' => Expect::bool(true),

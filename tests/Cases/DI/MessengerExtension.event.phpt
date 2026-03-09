@@ -9,8 +9,10 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\EventListener\AddErrorDetailsStampListener;
 use Symfony\Component\Messenger\EventListener\DispatchPcntlSignalListener;
+use Symfony\Component\Messenger\EventListener\ResetMemoryUsageListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
+use Symfony\Component\Messenger\EventListener\StopWorkerOnCustomStopExceptionListener;
 use Tester\Assert;
 use Tests\Toolkit\Container;
 
@@ -73,6 +75,8 @@ Toolkit::test(static function (): void {
 		AddErrorDetailsStampListener::class,
 		SendFailedMessageForRetryListener::class,
 		SendFailedMessageToFailureTransportListener::class,
+		StopWorkerOnCustomStopExceptionListener::class,
+		ResetMemoryUsageListener::class,
 	];
 
 	foreach ($expectedRegisteredListeners as $expectedRegisteredListener) {
