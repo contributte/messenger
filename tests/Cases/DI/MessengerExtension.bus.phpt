@@ -6,7 +6,9 @@ use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
 use Nette\DI\InvalidConfigurationException;
 use Psr\Container\ContainerInterface;
+use ReflectionClass;
 use Symfony\Component\Messenger\MessageBus;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\RoutableMessageBus;
 use Tester\Assert;
@@ -168,7 +170,7 @@ Toolkit::test(function (): void {
 	Assert::type(BusWrapper::class, $container->getByType(BusWrapper::class));
 });
 
-// RoutableMessageBus without fallback bus (default)
+// RoutableMessageBus is autowired as MessageBusInterface, no fallback by default
 Toolkit::test(static function (): void {
 	$container = Container::of()
 		->withDefaults()
@@ -178,7 +180,10 @@ Toolkit::test(static function (): void {
 	$routableBus = $container->getService('messenger.bus.routable');
 	Assert::type(RoutableMessageBus::class, $routableBus);
 
-	$rc = new \ReflectionClass($routableBus);
+	// RoutableMessageBus is autowired as MessageBusInterface
+	Assert::type(RoutableMessageBus::class, $container->getByType(MessageBusInterface::class));
+
+	$rc = new ReflectionClass($routableBus);
 	$prop = $rc->getProperty('fallbackBus');
 	Assert::null($prop->getValue($routableBus));
 });
@@ -203,7 +208,7 @@ Toolkit::test(static function (): void {
 	/** @var RoutableMessageBus $routableBus */
 	$routableBus = $container->getService('messenger.bus.routable');
 
-	$rc = new \ReflectionClass($routableBus);
+	$rc = new ReflectionClass($routableBus);
 	$prop = $rc->getProperty('fallbackBus');
 	Assert::type(MessageBus::class, $prop->getValue($routableBus));
 });

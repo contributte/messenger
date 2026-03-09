@@ -103,7 +103,7 @@ Toolkit::test(function (): void {
 		->build();
 
 	/** @var MessageBus $messageBus */
-	$messageBus = $container->getByType(MessageBus::class);
+	$messageBus = $container->getService('messenger.bus.messageBus.bus');
 
 	Assert::exception(
 		static fn () => $messageBus->dispatch(new SimpleMessage('foobar')),
@@ -135,7 +135,7 @@ Toolkit::test(function (): void {
 		->build();
 
 	/** @var MessageBus $messageBus */
-	$messageBus = $container->getByType(MessageBus::class);
+	$messageBus = $container->getService('messenger.bus.messageBus.bus');
 	$messageBus->dispatch(new SameMessage('foobar'));
 
 	/** @var SameHandler2 $handler1 */
