@@ -20,7 +20,7 @@
     ],
     "require": {
         "ext-json": "*",
-        "php": ">=8.0",
+        "php": ">=8.2",
         "nette/di": "^3.1.2",
         "psr/container": "^2.0.2",
         "psr/cache": "^2.0.0 || ^3.0.0",
