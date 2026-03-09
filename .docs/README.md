@@ -81,6 +81,22 @@ messenger:
     debug:
         panel: %debugMode%
 
+    # Worker limits for production environments.
+    # Workers will gracefully stop when configured limit is reached.
+    worker:
+        memoryLimit: 134217728  # int|null (bytes), e.g. 128 MB
+        timeLimit: 3600         # int|null (seconds), e.g. 1 hour
+        messageLimit: 1000      # int|null, stop after N messages
+        failureLimit: 5         # int|null, stop after N failures
+
+    # PSR-6 cache pool for messenger:stop-workers command and worker restart signal.
+    # When configured, registers StopWorkersCommand and StopWorkerOnRestartSignalListener.
+    cache: @cache.pool
+
+    # Fallback bus for RoutableMessageBus. Used when no bus stamp is present on the envelope.
+    # Defaults to null (no fallback). Set to a bus name to enable.
+    fallbackBus: messageBus
+
     # Defines buses, default one are messageBus, queryBus and commandBus.
     bus:
         messageBus:
@@ -119,12 +135,14 @@ messenger:
         # consoleLogger: @specialLogger
 
     # Defines transport factories.
+    # Built-in factories (sync, inMemory, amqp, redis) are auto-registered when their classes exist.
+    # Doctrine factory is auto-registered when ConnectionRegistry is available in the container.
     transportFactory:
         # redis: Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransportFactory
-        # sync: Symfony\Component\Messenger\Transport\Sync\SyncTransportFactorya
+        # sync: Symfony\Component\Messenger\Transport\Sync\SyncTransportFactory
         # amqp: Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpTransportFactory
         # doctrine: Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory
-        # inMemory: Symfony\Component\Messenger\Transport\InMemoryTransportFactory
+        # inMemory: Symfony\Component\Messenger\Transport\InMemory\InMemoryTransportFactory
         # inMemory: @customMemoryTransportFactory
 
     # Defines global failure transport. Default is none.
@@ -180,6 +198,8 @@ messenger:
 
     # Defines routing (message -> transport)
     # If the routing for message is missing, the message will be handled by handler immediately when dispatched
+    # Routing can also be defined via #[AsMessage] attribute on message classes (see below).
+    # NEON config takes precedence over attributes.
     routing:
         App\Domain\NewUserEmail: [redis]
         App\Domain\ForgotPasswordEmail: [db, redis]
@@ -217,6 +237,40 @@ final class SimpleMessage
     $this->text = $text;
   }
 
+}
+```
+
+#### Routing via `#[AsMessage]` attribute
+
+Instead of configuring routing in NEON, you can use the `#[AsMessage]` attribute directly on your message class.
+The attribute-based routing is auto-discovered from handler method parameters. NEON config takes precedence over attributes.
+
+```php
+<?php declare(strict_types = 1);
+
+namespace App\Domain;
+
+use Symfony\Component\Messenger\Attribute\AsMessage;
+
+#[AsMessage(transport: 'async')]
+final class NewUserEmail
+{
+
+  public function __construct(
+    public readonly string $email,
+  )
+  {
+  }
+
+}
+```
+
+Multiple transports are also supported:
+
+```php
+#[AsMessage(transport: ['async', 'audit'])]
+final class ImportantMessage
+{
 }
 ```
 
@@ -341,8 +395,7 @@ extensions:
 
 **Roadmap**
 
-- No fallbackBus in RoutableMessageBus.
-- No debug console commands.
+- No Tracy debug panel integration (`TraceableMessageBus`).
 
 ## Examples
 
