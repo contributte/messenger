@@ -126,15 +126,13 @@ final class Reflector
 			}
 		}
 
-		// Also try default __invoke method if not already covered
-		try {
-			$message = self::getMessageHandlerMessage($handlerClass, ['method' => '__invoke']);
-
-			if (!in_array($message, $messages, true)) {
-				$messages[] = $message;
+		// Try default __invoke method only if no handlers were found from attributes
+		if ($handlers === []) {
+			try {
+				$messages[] = self::getMessageHandlerMessage($handlerClass, ['method' => '__invoke']);
+			} catch (\Throwable) {
+				// Skip
 			}
-		} catch (\Throwable) {
-			// Skip
 		}
 
 		return $messages;
