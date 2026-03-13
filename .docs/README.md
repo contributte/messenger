@@ -2,7 +2,7 @@
 
 ## Content
 
-- [Setup](#usage)
+- [Setup](#setup)
 - [Relying](#relying)
 - [Configuration](#configuration)
 - [Integrations](#integrations)
@@ -22,7 +22,7 @@ extensions:
 
 ## Relying
 
-Take advantage of enpowering this package with 4 extra packages:
+Take advantage of empowering this package with extra packages:
 
 - `symfony/console` via [contributte/console](https://github.com/contributte/console)
 - `symfony/event-dispatcher` via [contributte/event-dispatcher](https://github.com/contributte/event-dispatcher)
@@ -41,7 +41,7 @@ extensions:
   console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
 ```
 
-Since this moment when you type `bin/console`, there'll be registered commands from Doctrine DBAL.
+Since this moment when you type `bin/console`, there will be registered commands from Symfony Messenger.
 
 ![Console Commands](https://raw.githubusercontent.com/contributte/messenger/master/.docs/assets/console.png)
 
@@ -61,14 +61,42 @@ extensions:
 
 ## Configuration
 
-> At first please take a look at official documentation.
-> https://symfony.com/doc/current/components/messenger.html
-> https://symfony.com/doc/current/messenger.html
+> [!TIP]
+> See [Symfony Messenger documentation](https://symfony.com/doc/current/messenger.html) for more details.
+
+### Transports
+
+| Transport | DSN | Description |
+|-----------|-----|-------------|
+| [Sync](https://symfony.com/doc/current/messenger.html#transport-configuration) | `sync://` | Handles messages immediately |
+| [In-Memory](https://symfony.com/doc/current/messenger.html#in-memory-transport) | `in-memory://` | Stores messages in memory (testing) |
+| [Redis](https://symfony.com/doc/current/messenger.html#redis-transport) | `redis://localhost:6379` | Async via Redis streams |
+| [Doctrine](https://symfony.com/doc/current/messenger.html#doctrine-transport) | `doctrine://default` | Async via database table |
+| [AMQP](https://symfony.com/doc/current/messenger.html#amqp-transport) | `amqp://guest:guest@localhost:5672` | Async via RabbitMQ |
+
+### Console Commands
+
+| Command | Description |
+|---------|-------------|
+| [`messenger:consume`](https://symfony.com/doc/current/messenger.html#consuming-messages-running-the-worker) | Consume messages from transport |
+| [`messenger:stop-workers`](https://symfony.com/doc/current/messenger.html#deploying-to-production) | Gracefully stop workers |
+| `messenger:setup-transports` | Setup transport infrastructure |
+| [`messenger:failed:show`](https://symfony.com/doc/current/messenger.html#saving-retrying-failed-messages) | Show failed messages |
+| [`messenger:failed:retry`](https://symfony.com/doc/current/messenger.html#saving-retrying-failed-messages) | Retry failed messages |
+| [`messenger:failed:remove`](https://symfony.com/doc/current/messenger.html#saving-retrying-failed-messages) | Remove failed messages |
+| `messenger:debug` | Debug routing and handlers |
 
 Minimal configuration example:
 
 ```neon
-# Just register the handler as a service to DIC
+messenger:
+    transport:
+        sync:
+            dsn: sync://
+
+    routing:
+        App\Domain\SimpleMessage: [sync]
+
 services:
     - App\Domain\SimpleMessageHandler
 ```
@@ -356,7 +384,7 @@ Handling errors in async environments is little bit tricky. You need to setup lo
 
 ### Doctrine
 
-Take advantage of enpowering this package with 6 extra packages:
+Take advantage of empowering this package with Doctrine packages:
 
 - `doctrine/dbal` via [nettrine/dbal](https://github.com/contributte/doctrine-dbal)
 - `doctrine/orm` via [nettrine/orm](https://github.com/contributte/doctrine-orm)
@@ -425,7 +453,7 @@ services:
 
 ### 2. Example projects
 
-We've made a few skeletons with preconfigured Symfony Messenger nad Contributte packages.
+We've made a few skeletons with preconfigured Symfony Messenger and Contributte packages.
 
 - https://github.com/contributte/messenger-skeleton
 
@@ -433,12 +461,24 @@ We've made a few skeletons with preconfigured Symfony Messenger nad Contributte 
 
 - https://contributte.org/examples.html (more examples)
 
-## Other
+## Features
 
-This repository is inspired by these packages.
+- Multiple bus types (`messageBus`, `commandBus`, `queryBus`)
+- Async transports (Redis, Doctrine, AMQP)
+- Retry strategies with exponential backoff
+- Failure transport for dead letters
+- Handler auto-discovery via `#[AsMessageHandler]` attribute
+- Message routing via `#[AsMessage]` attribute
+- Interface and wildcard routing
+- Worker limits (memory, time, message count)
+- Batch handlers support
 
-- https://github.com/fmasa/messenger
-- https://gitlab.com/symfony/messenger
-- https://gitlab.com/symfony/redis-messenger
+## Credits
+
+This repository is inspired by these packages:
+
+- [fmasa/messenger](https://github.com/fmasa/messenger)
+- [symfony/messenger](https://github.com/symfony/messenger)
+- [symfony/redis-messenger](https://github.com/symfony/redis-messenger)
 
 Thank you folks.
