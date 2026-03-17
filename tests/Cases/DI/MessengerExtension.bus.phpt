@@ -2,17 +2,22 @@
 
 namespace Tests\Cases\DI;
 
+use Contributte\Messenger\Bus\MessageBus as WrapperMessageBus;
 use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
 use Nette\DI\InvalidConfigurationException;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\InvalidArgumentException;
 use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
 use Symfony\Component\Messenger\RoutableMessageBus;
 use Tester\Assert;
 use Tests\Mocks\Bus\BusWrapper;
+use Tests\Mocks\Handler\SimpleHandler;
+use Tests\Mocks\Message\SimpleMessage;
 use Tests\Toolkit\Container;
 use Tests\Toolkit\Helpers;
 
@@ -170,7 +175,7 @@ Toolkit::test(function (): void {
 	Assert::type(BusWrapper::class, $container->getByType(BusWrapper::class));
 });
 
-// RoutableMessageBus is autowired as MessageBusInterface, no fallback by default
+// RoutableMessageBus is registered but messageBus stays autowired by default
 Toolkit::test(static function (): void {
 	$container = Container::of()
 		->withDefaults()
@@ -180,12 +185,33 @@ Toolkit::test(static function (): void {
 	$routableBus = $container->getService('messenger.bus.routable');
 	Assert::type(RoutableMessageBus::class, $routableBus);
 
-	// RoutableMessageBus is autowired as MessageBusInterface
-	Assert::type(RoutableMessageBus::class, $container->getByType(MessageBusInterface::class));
+	Assert::same($routableBus, $container->getByType(RoutableMessageBus::class));
+	Assert::type(MessageBus::class, $container->getByType(MessageBusInterface::class));
+	Assert::same($container->getService('messenger.bus.messageBus.bus'), $container->getByType(MessageBusInterface::class));
 
 	$rc = new ReflectionClass($routableBus);
 	$prop = $rc->getProperty('fallbackBus');
 	Assert::null($prop->getValue($routableBus));
+});
+
+// Custom bus autowiring
+Toolkit::test(static function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(static function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					bus:
+						messageBus:
+							autowired: false
+						commandBus:
+							autowired: true
+			NEON
+			));
+		})
+		->build();
+
+	Assert::same($container->getService('messenger.bus.commandBus.bus'), $container->getByType(MessageBusInterface::class));
 });
 
 // RoutableMessageBus with explicit fallback bus
@@ -211,4 +237,51 @@ Toolkit::test(static function (): void {
 	$rc = new ReflectionClass($routableBus);
 	$prop = $rc->getProperty('fallbackBus');
 	Assert::type(MessageBus::class, $prop->getValue($routableBus));
+});
+
+// Real DI services: RoutableMessageBus requires Envelope, wrapper accepts plain messages
+Toolkit::test(static function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(static function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					fallbackBus: messageBus
+					transport:
+						sync:
+							dsn: sync://
+
+					routing:
+						Tests\Mocks\Message\SimpleMessage: [sync]
+
+				services:
+					- Tests\Mocks\Handler\SimpleHandler
+			NEON
+			));
+		})
+		->build();
+
+	/** @var RoutableMessageBus $routableBus */
+	$routableBus = $container->getService('messenger.bus.routable');
+
+	Assert::exception(
+		static fn (): Envelope => $routableBus->dispatch(new SimpleMessage('plain-message')),
+		InvalidArgumentException::class,
+		'Messages passed to RoutableMessageBus::dispatch() must be inside an Envelope.',
+	);
+
+	/** @var SimpleHandler $handler */
+	$handler = $container->getByType(SimpleHandler::class);
+	Assert::null($handler->message);
+
+	$routableBus->dispatch(Envelope::wrap(new SimpleMessage('wrapped-message')));
+	Assert::type(SimpleMessage::class, $handler->message);
+	Assert::same('wrapped-message', $handler->message->text);
+
+	/** @var WrapperMessageBus $wrapperBus */
+	$wrapperBus = $container->getByType(WrapperMessageBus::class);
+	$wrapperBus->dispatch(new SimpleMessage('wrapper-message'));
+
+	Assert::type(SimpleMessage::class, $handler->message);
+	Assert::same('wrapper-message', $handler->message->text);
 });

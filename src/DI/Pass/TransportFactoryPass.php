@@ -16,14 +16,6 @@ use Symfony\Component\Messenger\Transport\TransportFactory;
 class TransportFactoryPass extends AbstractPass
 {
 
-	public const DEFAULT_TRANSPORT_FACTORY = [
-		'sync' => SyncTransportFactory::class,
-		'inMemory' => InMemoryTransportFactory::class,
-		'amqp' => AmqpTransportFactory::class,
-		'redis' => RedisTransportFactory::class,
-		'doctrine' => DoctrineTransportFactory::class,
-	];
-
 	/**
 	 * Register services
 	 */
@@ -31,22 +23,41 @@ class TransportFactoryPass extends AbstractPass
 	{
 		$builder = $this->getContainerBuilder();
 		$config = $this->getConfig();
-
-		// Filter out class factory that cannot be found, exclude doctrine (requires ConnectionRegistry)
-		$defaultFactories = array_filter(
-			self::DEFAULT_TRANSPORT_FACTORY,
-			static fn ($class, $name) => class_exists($class) && $name !== 'doctrine',
-			ARRAY_FILTER_USE_BOTH,
-		);
-
-		// Merge default + user defined factories
-		$transportFactories = array_merge($defaultFactories, (array) $config->transportFactory);
+		$transportFactories = (array) $config->transportFactory;
 
 		foreach ($transportFactories as $name => $factory) {
 			$builder->addDefinition($this->prefix(sprintf('transportFactory.%s', $name)))
 				->setFactory($factory)
 				->setAutowired(false)
 				->addTag(MessengerExtension::TRANSPORT_FACTORY_TAG, $name);
+		}
+
+		if (class_exists(SyncTransportFactory::class) && !$builder->hasDefinition($this->prefix('transportFactory.sync'))) {
+			$builder->addDefinition($this->prefix('transportFactory.sync'))
+				->setFactory(SyncTransportFactory::class, [$this->prefix('@bus.routable')])
+				->setAutowired(false)
+				->addTag(MessengerExtension::TRANSPORT_FACTORY_TAG, 'sync');
+		}
+
+		if (class_exists(InMemoryTransportFactory::class) && !$builder->hasDefinition($this->prefix('transportFactory.inMemory'))) {
+			$builder->addDefinition($this->prefix('transportFactory.inMemory'))
+				->setFactory(InMemoryTransportFactory::class)
+				->setAutowired(false)
+				->addTag(MessengerExtension::TRANSPORT_FACTORY_TAG, 'inMemory');
+		}
+
+		if (class_exists(AmqpTransportFactory::class) && !$builder->hasDefinition($this->prefix('transportFactory.amqp'))) {
+			$builder->addDefinition($this->prefix('transportFactory.amqp'))
+				->setFactory(AmqpTransportFactory::class)
+				->setAutowired(false)
+				->addTag(MessengerExtension::TRANSPORT_FACTORY_TAG, 'amqp');
+		}
+
+		if (class_exists(RedisTransportFactory::class) && !$builder->hasDefinition($this->prefix('transportFactory.redis'))) {
+			$builder->addDefinition($this->prefix('transportFactory.redis'))
+				->setFactory(RedisTransportFactory::class)
+				->setAutowired(false)
+				->addTag(MessengerExtension::TRANSPORT_FACTORY_TAG, 'redis');
 		}
 
 		// Placeholder: TransportFactory will be finalized in beforePassCompile

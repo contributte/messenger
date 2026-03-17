@@ -2,6 +2,7 @@
 
 namespace Contributte\Messenger\Bus;
 
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class CommandBus
@@ -16,7 +17,7 @@ class CommandBus
 
 	public function handle(object $command): void
 	{
-		$this->bus->dispatch($command);
+		$this->bus->dispatch(Envelope::wrap($command));
 	}
 
 }

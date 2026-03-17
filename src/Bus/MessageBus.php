@@ -15,9 +15,9 @@ class MessageBus
 		$this->bus = $bus;
 	}
 
-	public function dispatch(object $command): Envelope
+	public function dispatch(object $message): Envelope
 	{
-		return $this->bus->dispatch($command);
+		return $this->bus->dispatch(Envelope::wrap($message));
 	}
 
 }

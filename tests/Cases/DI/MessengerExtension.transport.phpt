@@ -5,14 +5,17 @@ namespace Tests\Cases\DI;
 use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
+use ReflectionClass;
 use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransport;
 use Symfony\Component\Messenger\Exception\InvalidArgumentException;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
+use Symfony\Component\Messenger\RoutableMessageBus;
 use Symfony\Component\Messenger\Transport\InMemory\InMemoryTransport;
 use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\Sync\SyncTransport;
+use Symfony\Component\Messenger\Transport\Sync\SyncTransportFactory;
 use Symfony\Component\Messenger\Transport\TransportFactoryInterface;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 use Tester\Assert;
@@ -47,6 +50,21 @@ Toolkit::test(function (): void {
 		->build();
 
 	Assert::count(5, $container->findByType(TransportFactoryInterface::class));
+});
+
+// Sync transport factory uses RoutableMessageBus
+Toolkit::test(static function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->build();
+
+	/** @var SyncTransportFactory $factory */
+	$factory = $container->getService('messenger.transportFactory.sync');
+
+	$rc = new ReflectionClass($factory);
+	$prop = $rc->getProperty('messageBus');
+
+	Assert::type(RoutableMessageBus::class, $prop->getValue($factory));
 });
 
 // Override transport factories

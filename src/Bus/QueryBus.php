@@ -3,6 +3,7 @@
 namespace Contributte\Messenger\Bus;
 
 use Contributte\Messenger\Exception\LogicalException;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 
@@ -18,7 +19,7 @@ class QueryBus
 
 	public function query(object $query): mixed
 	{
-		$stamp = $this->bus->dispatch($query)->last(HandledStamp::class);
+		$stamp = $this->bus->dispatch(Envelope::wrap($query))->last(HandledStamp::class);
 
 		if ($stamp === null) {
 			throw new LogicalException('Missing handled stamp');
