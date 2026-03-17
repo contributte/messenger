@@ -5,6 +5,7 @@ namespace Tests\Cases\DI;
 use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
+use Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory;
 use Symfony\Component\Messenger\Bridge\Redis\Transport\RedisTransport;
 use Symfony\Component\Messenger\Exception\InvalidArgumentException;
 use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
@@ -137,6 +138,26 @@ Toolkit::test(static function (): void {
 	// 5 = sync + inMemory + amqp + redis + main TransportFactory (no doctrine without ConnectionRegistry)
 	Assert::count(5, $container->findByType(TransportFactoryInterface::class));
 	Assert::false($container->hasService('messenger.transportFactory.doctrine'));
+});
+
+// Doctrine transport factory defined in NEON is preserved
+Toolkit::test(static function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(static function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					transportFactory:
+						doctrine: Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory
+				services:
+					- Tests\Mocks\Doctrine\DummyConnectionRegistry
+			NEON
+			));
+		})
+		->build();
+
+	Assert::type(DoctrineTransportFactory::class, $container->getService('messenger.transportFactory.doctrine'));
+	Assert::count(6, $container->findByType(TransportFactoryInterface::class));
 });
 
 // Dynamic parameters
