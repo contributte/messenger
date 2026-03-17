@@ -128,6 +128,27 @@ Toolkit::test(function (): void {
 	Assert::count(1, $container->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG));
 });
 
+// Doctrine transport factory registered when explicitly defined in NEON
+Toolkit::test(static function (): void {
+	$container = Container::of()
+		->withDefaults()
+		->withCompiler(static function (Compiler $compiler): void {
+			$compiler->addConfig(Helpers::neon(<<<'NEON'
+				messenger:
+					transportFactory:
+						doctrine: Symfony\Component\Messenger\Bridge\Doctrine\Transport\DoctrineTransportFactory
+				services:
+					connectionRegistry: Tests\Mocks\Doctrine\DummyConnectionRegistry
+			NEON
+			));
+		})
+		->build();
+
+	// 6 = sync + inMemory + amqp + redis + doctrine + main TransportFactory
+	Assert::count(6, $container->findByType(TransportFactoryInterface::class));
+	Assert::true($container->hasService('messenger.transportFactory.doctrine'));
+});
+
 // Doctrine transport factory not registered without ConnectionRegistry
 Toolkit::test(static function (): void {
 	$container = Container::of()
