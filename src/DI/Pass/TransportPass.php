@@ -33,8 +33,7 @@ class TransportPass extends AbstractPass
 
 			// Failure transport
 			if ($transport->failureTransport !== null || $config->failureTransport !== null) {
-				$transportDefinition = $builder->getDefinition($this->prefix(sprintf('transport.%s', $name)));
-				$transportDefinition->addTag(MessengerExtension::FAILURE_TRANSPORT_TAG, $transport->failureTransport ?? $config->failureTransport);
+				$transportDef->addTag(MessengerExtension::FAILURE_TRANSPORT_TAG, $transport->failureTransport ?? $config->failureTransport);
 			}
 
 			// Retry strategy

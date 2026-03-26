@@ -56,20 +56,11 @@ class EventPass extends AbstractPass
 		$retryStrategyContainerDef = $builder->getDefinition($this->prefix('retryStrategy.container'));
 		$retryStrategyContainerDef->setArgument(0, BuilderMan::of($this)->getRetryStrategies());
 
-		$dispatcherServiceName = $builder->getByType(EventDispatcherInterface::class);
+		$existingDispatcher = $builder->getByType(EventDispatcherInterface::class);
 
-		// Register event dispatcher
-		if ($dispatcherServiceName !== null) {
-			// Reuse existing dispatcher
-			$builder->addDefinition($this->prefix('event.dispatcher'))
-				->setFactory('@' . $dispatcherServiceName)
-				->setAutowired(false);
-		} else {
-			// Register default fallback dispatcher
-			$builder->addDefinition($this->prefix('event.dispatcher'))
-				->setFactory(EventDispatcher::class)
-				->setAutowired(false);
-		}
+		$builder->addDefinition($this->prefix('event.dispatcher'))
+			->setFactory($existingDispatcher !== null ? '@' . $existingDispatcher : EventDispatcher::class)
+			->setAutowired(false);
 
 		$dispatcher = $builder->getDefinition($this->prefix('event.dispatcher'));
 		assert($dispatcher instanceof ServiceDefinition);
@@ -114,50 +105,23 @@ class EventPass extends AbstractPass
 		// Worker limits
 		$config = $this->getConfig();
 
-		if ($config->worker->memoryLimit !== null) {
-			$dispatcher->addSetup('addSubscriber', [
-				new Statement(StopWorkerOnMemoryLimitListener::class, [
-					$config->worker->memoryLimit,
-					$this->prefix('@logger.logger'),
-				]),
-			]);
-		}
+		$workerLimits = [
+			[$config->worker->memoryLimit, StopWorkerOnMemoryLimitListener::class],
+			[$config->worker->timeLimit, StopWorkerOnTimeLimitListener::class],
+			[$config->worker->messageLimit, StopWorkerOnMessageLimitListener::class],
+			[$config->worker->failureLimit, StopWorkerOnFailureLimitListener::class],
+			[$config->cache, StopWorkerOnRestartSignalListener::class],
+		];
 
-		if ($config->worker->timeLimit !== null) {
-			$dispatcher->addSetup('addSubscriber', [
-				new Statement(StopWorkerOnTimeLimitListener::class, [
-					$config->worker->timeLimit,
-					$this->prefix('@logger.logger'),
-				]),
-			]);
-		}
-
-		if ($config->worker->messageLimit !== null) {
-			$dispatcher->addSetup('addSubscriber', [
-				new Statement(StopWorkerOnMessageLimitListener::class, [
-					$config->worker->messageLimit,
-					$this->prefix('@logger.logger'),
-				]),
-			]);
-		}
-
-		if ($config->worker->failureLimit !== null) {
-			$dispatcher->addSetup('addSubscriber', [
-				new Statement(StopWorkerOnFailureLimitListener::class, [
-					$config->worker->failureLimit,
-					$this->prefix('@logger.logger'),
-				]),
-			]);
-		}
-
-		// Restart signal (requires cache)
-		if ($config->cache !== null) {
-			$dispatcher->addSetup('addSubscriber', [
-				new Statement(StopWorkerOnRestartSignalListener::class, [
-					$config->cache,
-					$this->prefix('@logger.logger'),
-				]),
-			]);
+		foreach ($workerLimits as [$configValue, $listenerClass]) {
+			if ($configValue !== null) {
+				$dispatcher->addSetup('addSubscriber', [
+					new Statement($listenerClass, [
+						$configValue,
+						$this->prefix('@logger.logger'),
+					]),
+				]);
+			}
 		}
 	}
 

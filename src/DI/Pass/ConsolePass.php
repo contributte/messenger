@@ -21,10 +21,10 @@ class ConsolePass extends AbstractPass
 	 */
 	public function loadPassConfiguration(): void
 	{
-		$builder = $this->extension->getContainerBuilder();
+		$builder = $this->getContainerBuilder();
 		$config = $this->getConfig();
 
-		$builder->addDefinition($this->extension->prefix('console.consumeCommand'))
+		$builder->addDefinition($this->prefix('console.consumeCommand'))
 			->setFactory(ConsumeMessagesCommand::class, [
 				$this->prefix('@bus.routable'),
 				$this->prefix('@transport.container'),
@@ -32,23 +32,23 @@ class ConsolePass extends AbstractPass
 				$this->prefix('@logger.logger'),
 			]);
 
-		$builder->addDefinition($this->extension->prefix('console.debugCommand'))
+		$builder->addDefinition($this->prefix('console.debugCommand'))
 			->setFactory(DebugCommand::class, [[]]);
 
-		$builder->addDefinition($this->extension->prefix('console.setupTransportsCommand'))
+		$builder->addDefinition($this->prefix('console.setupTransportsCommand'))
 			->setFactory(SetupTransportsCommand::class, [$this->prefix('@transport.container'), []]);
 
-		$builder->addDefinition($this->extension->prefix('console.statsCommand'))
+		$builder->addDefinition($this->prefix('console.statsCommand'))
 			->setFactory(StatsCommand::class, [$this->prefix('@transport.container'), []]);
 
-		$builder->addDefinition($this->extension->prefix('console.failedMessageRemoveCommand'))
+		$builder->addDefinition($this->prefix('console.failedMessageRemoveCommand'))
 			->setFactory(FailedMessagesRemoveCommand::class, [
 				$config->failureTransport,
 				$this->prefix('@failureTransport.serviceProvider'),
 				$this->prefix('@serializer.default'),
 			]);
 
-		$builder->addDefinition($this->extension->prefix('console.failedMessageRetryCommand'))
+		$builder->addDefinition($this->prefix('console.failedMessageRetryCommand'))
 			->setFactory(FailedMessagesRetryCommand::class, [
 				$config->failureTransport,
 				$this->prefix('@failureTransport.serviceProvider'),
@@ -58,7 +58,7 @@ class ConsolePass extends AbstractPass
 				$this->prefix('@serializer.default'),
 			]);
 
-		$builder->addDefinition($this->extension->prefix('console.failedMessageShowCommand'))
+		$builder->addDefinition($this->prefix('console.failedMessageShowCommand'))
 			->setFactory(FailedMessagesShowCommand::class, [
 				$config->failureTransport,
 				$this->prefix('@failureTransport.serviceProvider'),
@@ -66,7 +66,7 @@ class ConsolePass extends AbstractPass
 			]);
 
 		if ($config->cache !== null) {
-			$builder->addDefinition($this->extension->prefix('console.stopWorkersCommand'))
+			$builder->addDefinition($this->prefix('console.stopWorkersCommand'))
 				->setFactory(StopWorkersCommand::class, [$config->cache]);
 		}
 	}

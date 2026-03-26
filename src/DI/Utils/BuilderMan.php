@@ -61,25 +61,12 @@ final class BuilderMan
 	 */
 	public function getTransportToFailureTransportsServiceMapping(): array
 	{
-		$builder = $this->pass->getContainerBuilder();
-
-		$transports = $this->getTransports();
-		$definitions = $builder->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG);
-
-		$transportsMapping = [];
-		foreach ($definitions as $serviceName => $failureTransport) {
-			$definition = $builder->getDefinition($serviceName);
-			/** @var string $transport */
-			$transport = $definition->getTag(MessengerExtension::TRANSPORT_TAG);
-
-			if (!isset($transports[$failureTransport])) {
-				throw new LogicalException(sprintf('Invalid failure transport "%s" defined for "%s" transport. Available transports "%s".', $failureTransport, $transport, implode(', ', array_keys($transports))));
-			}
-
-			$transportsMapping[$transport] = $transports[$failureTransport];
+		$mapping = [];
+		foreach ($this->getValidatedFailureTransports() as $transport => $data) {
+			$mapping[$transport] = $data['serviceName'];
 		}
 
-		return $transportsMapping;
+		return $mapping;
 	}
 
 	/**
@@ -87,27 +74,12 @@ final class BuilderMan
 	 */
 	public function getFailedTransports(): array
 	{
-		$builder = $this->pass->getContainerBuilder();
-
-		$transports = $this->getTransports();
-		/** @var array<string, string> $definitions */
-		$definitions = $builder->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG);
-
-		$transportsMapping = [];
-
-		foreach ($definitions as $serviceName => $failureTransport) {
-			$definition = $builder->getDefinition($serviceName);
-			/** @var string $transport */
-			$transport = $definition->getTag(MessengerExtension::TRANSPORT_TAG);
-
-			if (!isset($transports[$failureTransport])) {
-				throw new LogicalException(sprintf('Invalid failure transport "%s" defined for "%s" transport. Available transports "%s".', $failureTransport, $transport, implode(', ', array_keys($transports))));
-			}
-
-			$transportsMapping[$failureTransport] = $transports[$failureTransport];
+		$mapping = [];
+		foreach ($this->getValidatedFailureTransports() as $data) {
+			$mapping[$data['failureTransport']] = $data['serviceName'];
 		}
 
-		return $transportsMapping;
+		return $mapping;
 	}
 
 	/**
@@ -244,6 +216,34 @@ final class BuilderMan
 		}
 
 		return new Statement($serializer);
+	}
+
+	/**
+	 * @return array<string, array{failureTransport: string, serviceName: string}>
+	 */
+	private function getValidatedFailureTransports(): array
+	{
+		$builder = $this->pass->getContainerBuilder();
+		$transports = $this->getTransports();
+		$definitions = $builder->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG);
+
+		$result = [];
+		foreach ($definitions as $serviceName => $failureTransport) {
+			$definition = $builder->getDefinition($serviceName);
+			/** @var string $transport */
+			$transport = $definition->getTag(MessengerExtension::TRANSPORT_TAG);
+
+			if (!isset($transports[$failureTransport])) {
+				throw new LogicalException(sprintf('Invalid failure transport "%s" defined for "%s" transport. Available transports "%s".', $failureTransport, $transport, implode(', ', array_keys($transports))));
+			}
+
+			$result[$transport] = [
+				'failureTransport' => (string) $failureTransport,
+				'serviceName' => $transports[$failureTransport],
+			];
+		}
+
+		return $result;
 	}
 
 	/**
