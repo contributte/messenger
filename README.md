@@ -12,7 +12,7 @@
   <a href="https://bit.ly/ctteg"><img src="https://badgen.net/badge/support/gitter/cyan"></a>
   <a href="https://bit.ly/cttfo"><img src="https://badgen.net/badge/support/forum/yellow"></a>
   <a href="https://contributte.org/partners.html"><img src="https://badgen.net/badge/become/a%20patron/F96854"></a>
-<p>
+</p>
 
 <p align=center>
 Website 🚀 <a href="https://contributte.org">contributte.org</a> | Contact 👨🏻‍💻 <a href="https://f3l1x.io">f3l1x.io</a> | Twitter 🐦 <a href="https://twitter.com/contributte">@contributte</a>
@@ -20,29 +20,24 @@ Website 🚀 <a href="https://contributte.org">contributte.org</a> | Contact �
 
 Best Symfony Messenger for Nette framework. It provides multiple bus types, async transports, retry strategies, failure transport, and handler auto-discovery.
 
-## Version
+## Versions
 
 | State  | Version | Branch   | Nette | PHP     |
 |--------|---------|----------|-------|---------|
 | dev    | `^0.3`  | `master` | 3.2+  | `>=8.2` |
 | stable | `^0.2`  | `master` | 3.2+  | `>=8.2` |
 
-## Usage
-
-To install the latest version of `contributte/messenger` use [Composer](https://getcomposer.org).
-
-```
-composer require contributte/messenger
-```
-
-## Content
+## Contents
 
 - [Setup](#setup)
-- [Relying](#relying)
+- [Optional integrations](#optional-integrations)
 - [Configuration](#configuration)
 - [Integrations](#integrations)
 - [Limitations](#limitations)
 - [Examples](#examples)
+- [Features](#features)
+- [Credits](#credits)
+- [Development](#development)
 
 ## Setup
 
@@ -55,7 +50,7 @@ extensions:
   messenger: Contributte\Messenger\DI\MessengerExtension
 ```
 
-## Relying
+## Optional integrations
 
 Take advantage of empowering this package with extra packages:
 
@@ -78,7 +73,7 @@ extensions:
 
 Since this moment when you type `bin/console`, there will be registered commands from Symfony Messenger.
 
-![Console Commands](https://raw.githubusercontent.com/contributte/messenger/master/.docs/assets/console.png)
+![Console Commands](.docs/assets/console.png)
 
 ### `symfony/event-dispatcher`
 
@@ -357,7 +352,7 @@ services:
                 from_transport: sync
 ```
 
-2. with the attribute [`#[AsMessageHandler]`] (https://github.com/symfony/messenger/blob/6e749550d539f787023878fad675b744411db003/Attribute/AsMessageHandler.php).
+2. with the attribute [`#[AsMessageHandler]`](https://github.com/symfony/messenger/blob/6e749550d539f787023878fad675b744411db003/Attribute/AsMessageHandler.php).
 ```php
 <?php declare(strict_types = 1);
 
@@ -423,10 +418,10 @@ Take advantage of empowering this package with Doctrine packages:
 
 - `doctrine/dbal` via [nettrine/dbal](https://github.com/contributte/doctrine-dbal)
 - `doctrine/orm` via [nettrine/orm](https://github.com/contributte/doctrine-orm)
-- `doctrine/annotations` via [nettrine/orm](https://github.com/contributte/doctrine-annotations)
-- `doctrine/cache` via [nettrine/orm](https://github.com/contributte/doctrine-cache)
-- `doctrine/migrations` via [nettrine/orm](https://github.com/contributte/doctrine-migrations)
-- `doctrine/fixtures` via [nettrine/orm](https://github.com/contributte/doctrine-fixtures)
+- `doctrine/annotations` via [nettrine/annotations](https://github.com/contributte/doctrine-annotations)
+- `doctrine/cache` via [nettrine/cache](https://github.com/contributte/doctrine-cache)
+- `doctrine/migrations` via [nettrine/migrations](https://github.com/contributte/doctrine-migrations)
+- `doctrine/fixtures` via [nettrine/fixtures](https://github.com/contributte/doctrine-fixtures)
 
 ```sh
 composer require nettrine/annotations nettrine/cache nettrine/migrations nettrine/fixtures nettrine/dbal nettrine/orm
@@ -463,10 +458,6 @@ extensions:
 ## Examples
 
 ### 1. Manual example
-
-```sh
-composer require contributte/messenger
-```
 
 ```neon
 # Extension > Messenger
@@ -522,7 +513,7 @@ Thank you folks.
 
 See [how to contribute](https://contributte.org/contributing.html) to this package.
 
-This package is currently maintaining by these authors.
+This package is currently maintained by these authors.
 
 <a href="https://github.com/f3l1x">
   <img width="80" height="80" src="https://avatars2.githubusercontent.com/u/538058?v=3&s=80">
