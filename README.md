@@ -18,6 +18,15 @@
 Website 🚀 <a href="https://contributte.org">contributte.org</a> | Contact 👨🏻‍💻 <a href="https://f3l1x.io">f3l1x.io</a> | Twitter 🐦 <a href="https://twitter.com/contributte">@contributte</a>
 </p>
 
+Best Symfony Messenger for Nette framework. It provides multiple bus types, async transports, retry strategies, failure transport, and handler auto-discovery.
+
+## Version
+
+| State  | Version | Branch   | Nette | PHP     |
+|--------|---------|----------|-------|---------|
+| dev    | `^0.3`  | `master` | 3.2+  | `>=8.2` |
+| stable | `^0.2`  | `master` | 3.2+  | `>=8.2` |
+
 ## Usage
 
 To install the latest version of `contributte/messenger` use [Composer](https://getcomposer.org).
@@ -25,8 +34,6 @@ To install the latest version of `contributte/messenger` use [Composer](https://
 ```
 composer require contributte/messenger
 ```
-
-## Documentation
 
 ## Content
 
@@ -510,13 +517,6 @@ This repository is inspired by these packages:
 - [symfony/redis-messenger](https://github.com/symfony/redis-messenger)
 
 Thank you folks.
-
-## Version
-
-| State  | Version | Branch   | Nette | PHP     |
-|--------|---------|----------|-------|---------|
-| dev    | `^0.3`  | `master` | 3.2+  | `>=8.2` |
-| stable | `^0.2`  | `master` | 3.2+  | `>=8.2` |
 
 ## Development
 
