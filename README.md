@@ -11,7 +11,7 @@
   <a href="https://github.com/contributte/messenger"><img src="https://badgen.net/github/license/contributte/messenger"></a>
   <a href="https://bit.ly/ctteg"><img src="https://badgen.net/badge/support/gitter/cyan"></a>
   <a href="https://bit.ly/cttfo"><img src="https://badgen.net/badge/support/forum/yellow"></a>
-  <a href="https://contributte.org/partners.html"><img src="https://badgen.net/badge/become/a%20patron/F96854"></a>
+  <a href="https://contributte.org/partners.html"><img src="https://badgen.net/badge/sponsor/donations/F96854"></a>
 </p>
 
 <p align=center>
@@ -457,33 +457,13 @@ extensions:
 
 ## Examples
 
-### 1. Manual example
-
-```neon
-# Extension > Messenger
-#
-extensions:
-    messenger: Contributte\Messenger\DI\MessengerExtension
-
-messenger:
-    transport:
-        sync:
-            dsn: "sync://"
-
-    routing:
-        App\Domain\LogText: [sync]
-
-services:
-    - App\Domain\LogTextHandler
-```
-
-### 2. Example projects
+### Example projects
 
 We've made a few skeletons with preconfigured Symfony Messenger and Contributte packages.
 
 - https://github.com/contributte/messenger-skeleton
 
-### 3. Example playground
+### Example playground
 
 - https://contributte.org/examples.html (more examples)
 
