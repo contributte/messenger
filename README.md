@@ -50,34 +50,9 @@ services:
 	- App\Domain\SimpleMessageHandler
 ```
 
-Write the handler. The type of the first parameter says which message it handles:
-
-```php
-namespace App\Domain;
-
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-
-#[AsMessageHandler]
-final class SimpleMessageHandler
-{
-
-	public function __invoke(SimpleMessage $message): void
-	{
-		// handle the message
-	}
-
-}
-```
-
-Dispatch the message with the autowired `Symfony\Component\Messenger\MessageBusInterface`:
-
-```php
-$bus->dispatch(new SimpleMessage());
-```
-
-## Documentation
-
-For details on how to use this package, check out the [documentation](.docs).
+The handler is a class with `#[AsMessageHandler]` and an `__invoke(SimpleMessage $message)` method. Dispatch the
+message with the autowired `Symfony\Component\Messenger\MessageBusInterface`. The [documentation](.docs) shows the
+full example.
 
 ## Versions
 
@@ -88,9 +63,19 @@ For details on how to use this package, check out the [documentation](.docs).
 
 ## Development
 
+Install the dependencies and run the checks:
+
+```bash
+make install   # install dependencies
+make qa        # check code style and run static analysis
+make tests     # run tests
+```
+
+Run `make` to list every target.
+
 See [how to contribute](https://contributte.org/contributing.html) to this package.
 
-This package is currently maintained by these authors.
+This package is maintained by these authors.
 
 <a href="https://github.com/f3l1x">
   <img width="80" height="80" src="https://avatars2.githubusercontent.com/u/538058?v=3&s=80">
