@@ -64,7 +64,8 @@ final class BuilderMan
 		$builder = $this->pass->getContainerBuilder();
 
 		$transports = $this->getTransports();
-		$definitions = $this->findStringTags(MessengerExtension::FAILURE_TRANSPORT_TAG);
+		/** @var array<string, string> $definitions */
+		$definitions = $builder->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG);
 
 		$transportsMapping = [];
 		foreach ($definitions as $serviceName => $failureTransport) {
@@ -90,7 +91,8 @@ final class BuilderMan
 		$builder = $this->pass->getContainerBuilder();
 
 		$transports = $this->getTransports();
-		$definitions = $this->findStringTags(MessengerExtension::FAILURE_TRANSPORT_TAG);
+		/** @var array<string, string> $definitions */
+		$definitions = $builder->findByTag(MessengerExtension::FAILURE_TRANSPORT_TAG);
 
 		$transportsMapping = [];
 
@@ -252,8 +254,11 @@ final class BuilderMan
 	{
 		$builder = $this->pass->getContainerBuilder();
 
+		/** @var array<string, string> $tags */
+		$tags = $builder->findByTag($tag);
+
 		$definitions = [];
-		foreach ($this->findStringTags($tag) as $serviceName => $tagValue) {
+		foreach ($tags as $serviceName => $tagValue) {
 			$definitions[$tagValue] = $builder->getDefinition($serviceName);
 		}
 
@@ -265,29 +270,17 @@ final class BuilderMan
 	 */
 	private function getServiceNamesByTag(string $tag): array
 	{
+		$builder = $this->pass->getContainerBuilder();
+
+		/** @var array<string, string> $tags */
+		$tags = $builder->findByTag($tag);
+
 		$definitions = [];
-		foreach ($this->findStringTags($tag) as $serviceName => $tagValue) {
+		foreach ($tags as $serviceName => $tagValue) {
 			$definitions[$tagValue] = $serviceName;
 		}
 
 		return $definitions;
-	}
-
-	/**
-	 * @return array<string, string> service name => tag value
-	 */
-	private function findStringTags(string $tag): array
-	{
-		$tags = [];
-		foreach ($this->pass->getContainerBuilder()->findByTag($tag) as $serviceName => $tagValue) {
-			if (!is_string($tagValue)) {
-				throw new LogicalException(sprintf('Tag "%s" of service "%s" must be a string, %s given.', $tag, $serviceName, get_debug_type($tagValue)));
-			}
-
-			$tags[$serviceName] = $tagValue;
-		}
-
-		return $tags;
 	}
 
 }
