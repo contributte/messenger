@@ -34,8 +34,8 @@ For details on how to use this package, check out our [documentation](.docs).
 
 | State  | Version | Branch   | Nette | Symfony    | PHP     |
 |--------|---------|----------|-------|------------|---------|
-| dev    | `^0.3`  | `master` | 3.1+  | 7.4 / 8.x  | `>=8.2` |
-| stable | `^0.2`  | `master` | 3.1+  | 6.x        | `>=8.0` |
+| dev    | `^0.4`  | `master` | 3.1+  | 7.4 / 8.x  | `>=8.2` |
+| stable | `^0.3`  | `master` | 3.1+  | 7.4 / 8.x  | `>=8.2` |
 
 ## Development
 
