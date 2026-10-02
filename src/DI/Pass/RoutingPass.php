@@ -2,7 +2,6 @@
 
 namespace Contributte\Messenger\DI\Pass;
 
-use Contributte\Messenger\DI\MessengerExtension;
 use Contributte\Messenger\DI\Utils\BuilderMan;
 use Contributte\Messenger\Exception\LogicalException;
 use Nette\DI\Definitions\ServiceDefinition;
@@ -29,7 +28,7 @@ class RoutingPass extends AbstractPass
 	{
 		$builder = $this->getContainerBuilder();
 		$config = $this->getConfig();
-		$transports = array_values($builder->findByTag(MessengerExtension::TRANSPORT_TAG));
+		$transports = array_keys(BuilderMan::of($this)->getTransports());
 
 		// Scan message classes for #[AsMessage] attribute routing
 		$attributeRouting = BuilderMan::of($this)->getAttributeRouting();

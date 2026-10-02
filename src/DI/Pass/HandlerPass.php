@@ -146,7 +146,7 @@ class HandlerPass extends AbstractPass
 				'bus' => $attribute->bus ?? $defaultBusName,
 				'alias' => null,
 				'method' => $attribute->method ?? self::DEFAULT_METHOD_NAME,
-				'priority' => $attribute->priority ?? self::DEFAULT_PRIORITY,
+				'priority' => $attribute->priority,
 				'handles' => $attribute->handles ?? null,
 				'from_transport' => $attribute->fromTransport ?? null,
 			];
