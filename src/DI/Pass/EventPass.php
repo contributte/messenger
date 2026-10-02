@@ -4,6 +4,7 @@ namespace Contributte\Messenger\DI\Pass;
 
 use Contributte\Messenger\Container\NetteContainer;
 use Contributte\Messenger\DI\Utils\BuilderMan;
+use Contributte\Messenger\EventListener\StopWorkerOnTimeLimitListener;
 use Nette\DI\Definitions\ServiceDefinition;
 use Nette\DI\Definitions\Statement;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -18,7 +19,6 @@ use Symfony\Component\Messenger\EventListener\StopWorkerOnFailureLimitListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMemoryLimitListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMessageLimitListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnRestartSignalListener;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnTimeLimitListener;
 
 class EventPass extends AbstractPass
 {

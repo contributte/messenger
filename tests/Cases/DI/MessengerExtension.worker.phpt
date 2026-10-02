@@ -3,6 +3,7 @@
 namespace Tests\Cases\DI;
 
 use Contributte\EventDispatcher\DI\EventDispatcherExtension;
+use Contributte\Messenger\EventListener\StopWorkerOnTimeLimitListener;
 use Contributte\Tester\Toolkit;
 use Nette\DI\Compiler;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -11,7 +12,6 @@ use Symfony\Component\Messenger\EventListener\StopWorkerOnCustomStopExceptionLis
 use Symfony\Component\Messenger\EventListener\StopWorkerOnFailureLimitListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMemoryLimitListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMessageLimitListener;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnTimeLimitListener;
 use Tester\Assert;
 use Tests\Toolkit\Container;
 use Tests\Toolkit\Helpers;
