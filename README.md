@@ -18,19 +18,43 @@
 Website 🚀 <a href="https://contributte.org">contributte.org</a> | Contact 👨🏻‍💻 <a href="https://f3l1x.io">f3l1x.io</a> | Twitter 🐦 <a href="https://twitter.com/contributte">@contributte</a>
 </p>
 
+Contributte Messenger integrates [Symfony Messenger](https://symfony.com/doc/current/messenger.html) into Nette
+Framework. You configure buses, transports and routing in NEON, and every service with `#[AsMessageHandler]`
+becomes a message handler without extra registration.
+
 ## Usage
 
-To install the latest version of `contributte/messenger` use [Composer](https://getcomposer.org).
+To install the latest version of `contributte/messenger`, use [Composer](https://getcomposer.org):
 
-```
+```bash
 composer require contributte/messenger
 ```
 
-## Documentation
+Requires PHP 8.2 or later, Nette 3.2 or later and Symfony Messenger 7.4 or later.
 
-For details on how to use this package, check out our [documentation](.docs).
+Register the extension in your `config.neon`, add a transport and route a message to it:
 
-## Version
+```neon
+extensions:
+	messenger: Contributte\Messenger\DI\MessengerExtension
+
+messenger:
+	transport:
+		sync:
+			dsn: sync://
+
+	routing:
+		App\Domain\SimpleMessage: [sync]
+
+services:
+	- App\Domain\SimpleMessageHandler
+```
+
+The handler is a class with `#[AsMessageHandler]` and an `__invoke(SimpleMessage $message)` method. Dispatch the
+message with the autowired `Symfony\Component\Messenger\MessageBusInterface`. The [documentation](.docs) shows the
+full example.
+
+## Versions
 
 | State  | Version | Branch   | Nette | Symfony    | PHP     |
 |--------|---------|----------|-------|------------|---------|
@@ -39,9 +63,19 @@ For details on how to use this package, check out our [documentation](.docs).
 
 ## Development
 
+Install the dependencies and run the checks:
+
+```bash
+make install   # install dependencies
+make qa        # check code style and run static analysis
+make tests     # run tests
+```
+
+Run `make` to list every target.
+
 See [how to contribute](https://contributte.org/contributing.html) to this package.
 
-This package is currently maintaining by these authors.
+This package is maintained by these authors.
 
 <a href="https://github.com/f3l1x">
   <img width="80" height="80" src="https://avatars2.githubusercontent.com/u/538058?v=3&s=80">
@@ -49,5 +83,5 @@ This package is currently maintaining by these authors.
 
 -----
 
-Consider to [support](https://contributte.org/partners.html) **contributte** development team.
-Also thank you for using this package.
+Consider [supporting](https://contributte.org/partners.html) the **contributte** development team.
+Thank you for using this package.
