@@ -72,7 +72,7 @@ class TransportFactoryPass extends AbstractPass
 	{
 		$builder = $this->getContainerBuilder();
 
-		// Register Doctrine transport factory when ConnectionRegistry is available
+		// Register Doctrine transport factory when ConnectionRegistry is available (unless already defined via config)
 		if (class_exists(DoctrineTransportFactory::class) && interface_exists(ConnectionRegistry::class)) {
 			if (
 				$builder->getByType(ConnectionRegistry::class, false) !== null
